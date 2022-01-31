@@ -1,36 +1,14 @@
 <!-- ============================================================== -->
 <!-- Main wrapper - style you can find in pages.scss -->
 <!-- ============================================================== -->
-<div class="main-container" [dir]="dir" [ngClass]="{'minisidebar': minisidebar, 'boxed': boxed, 'danger': danger, 'blue': blue, 'green': green, 'horizontal' : horizontal }">
+<div class="main-container" [ngClass]="{'minisidebar': minisidebar, 'boxed': boxed, 'danger': danger, 'blue': blue, 'green': green, 'horizontal' : horizontal }">
 
         <!-- ============================================================== -->
         <!-- Topbar - style you can find in header.scss -->
         <!-- ============================================================== -->
         <mat-toolbar color="primary" class="topbar relative">
             <div class="w-100 fix-width-for-horizontal">
-                <!-- ============================================================== -->
-                <!-- Logo - style you can find in header.scss -->
-                <!-- ============================================================== -->
-                <div class="navbar-header">
-                    <a class="navbar-brand" href="/">
-                        <!-- Logo icon -->
-                        <b>
-                            <!--You can put here icon as well // <i class="wi wi-sunset"></i> //-->
-                            <!-- Dark Logo icon -->
-                            <img src="assets/images/logo-icon.png" alt="homepage" class="dark-logo">
-                            <!-- Light Logo icon -->
-                            <img src="assets/images/logo-light-icon.png" alt="homepage" class="light-logo">
-                        </b>
-                        <!--End Logo icon -->
-                        <!-- Logo text -->
-                        <span fxShow="false" fxShow.gt-xs>
-                            <!-- dark Logo text -->
-                            <img src="assets/images/logo-text.png" alt="homepage" class="dark-logo">
-                            <!-- Light Logo text -->
-                            <img src="assets/images/logo-light-text.png" class="light-logo" alt="homepage">
-                        </span>
-                    </a>
-                </div>
+                
                 <!-- ============================================================== -->
                 <!-- sidebar toggle -->
                 <!-- ============================================================== -->
@@ -39,36 +17,56 @@
                     value="sidebarclosed">
                     <mat-icon>menu</mat-icon>
                 </button>
+
+
                 <!-- ============================================================== -->
-                <!-- Search - style you can find in header.scss -->
+                <!-- Logo - style you can find in header.scss -->
                 <!-- ============================================================== -->
-                <button mat-icon-button class="srh-btn" (click)="showSearch = !showSearch">
-                    <mat-icon>search</mat-icon>
-                </button>
-                <form class="app-search" [ngClass]="{'show-search': showSearch}">
-                    <input type="text" class="form-control" placeholder="Search &amp; enter">
-                    <a class="cl-srh-btn" (click)="showSearch = !showSearch">
-                        <i class="ti-close"></i>
-                    </a>
-                </form>
-                <span fxFlex></span>
+                
+                <a class="navbar-brand" fxFlexAlign="center" href="/">
+                        <!-- Logo text -->
+                        <span> SCHEDULER</span>
+                        
+                </a>
+                
+
+                <!-- Fill space -->
+                <span fxFlex></span>  
                 <!-- ============================================================== -->
                 <!-- app header component - style you can find in header.scss / header.component.ts-->
                 <!-- ============================================================== -->
-                <div *ngIf="!horizontal else horizontalheader">
+                <!-- <div *ngIf="!horizontal else horizontalheader">
                     <app-vertical-header></app-vertical-header>
                 </div>
 
                 <ng-template #horizontalheader>
                     <app-horizontal-header></app-horizontal-header>
-                </ng-template>
+                </ng-template> -->
 
                 <!-- ============================================================== -->
                 <!-- Right sidebar toggle - style you can find in rightsidebar.component.scss -->
                 <!-- ============================================================== -->
-                <button (click)="end.toggle()" mat-icon-button class="ml-xs overflow-visible">
-                    <mat-icon>settings</mat-icon>
-                </button>
+                
+
+                <!-- ============================================================== -->
+                <!-- Profile - style you can find in header.scss -->
+                <!-- ============================================================== -->
+                <button [matMenuTriggerFor]="profile" mat-icon-button class="m-r-5">
+                    <mat-icon id="account_icon" >account_circle</mat-icon> </button>
+                <mat-menu #profile="matMenu" class="mymegamenu">
+                    <button (click)="end.toggle()" mat-menu-item>
+                        <mat-icon>settings</mat-icon> Settings
+                    </button>
+                    <button mat-menu-item>
+                        <mat-icon>account_box</mat-icon> Profile
+                    </button>
+                    <button mat-menu-item>
+                        <mat-icon>notifications_off</mat-icon> Disable notifications
+                    </button>
+                    <button mat-menu-item>
+                        <mat-icon>exit_to_app</mat-icon> Sign Out
+                    </button>
+                </mat-menu>
             </div>
 
         </mat-toolbar>
@@ -76,26 +74,62 @@
         <!-- End Topbar - style you can find in pages.scss -->
         <!-- ============================================================== -->
         <mat-sidenav-container class="example-sidenav-container" [style.marginTop.px]="mobileQuery.matches ? 0 : 0"
-            [ngClass]="{'minisidebar': minisidebar}">
+            >
             <!-- ============================================================== -->
-            <!-- Sidebar - style you can find in sidebar.scss -->
+            <!-- Menu within Sidebar - style you can find in sidebar.scss 
+                        [mode]="mobileQuery.matches ? 'side' : 'over'"  --> 
             <!-- ============================================================== -->
-            <mat-sidenav #snav id="snav" class="pl-xs" [mode]="mobileQuery.matches ? 'side' : 'over'" fixedTopGap="0"
-                [opened]="mobileQuery.matches" [disableClose]="mobileQuery.matches" (open)="sidebarOpened = true"
-                (close)="sidebarOpened = false">
+            <!-- <mat-sidenav #snav mode="over">
+                 <mat-menu >
+                        <button mat-menu-item>
+                            Dashboard
+                        </button>
+                        <button mat-menu-item>
+                            Courses
+                        </button>
+                        <button mat-menu-item>
+                            <span>Notifications </span> 
+                            <span fxFlex></span>
+                            <span class="label label-red"> 10</span>
+                            
+                        </button>
+                    
+                    </mat-menu>
+            </mat-sidenav> -->
 
-                <perfect-scrollbar *ngIf="!horizontal; else horizontalsidebar" class="scbar" [config]="config">
-                    <app-vertical-sidebar class="app-sidebar" [showClass]='status' (notify)="snav.toggle()">
+            <mat-sidenav #snav id="snav" class="pl-xs" mode="over" fixedTopGap="0"
+                [opened]="false" [disableClose]="mobileQuery.matches" (open)="sidebarOpened = true"
+                (close)="sidebarOpened = true">
+                <mat-nav-list >
+                    <h3 mat-subheader class="text-uppercase font-weight-bold">Menu</h3>
+                    <mat-list-item>
+                        <mat-card>Dashboard</mat-card>
+                    </mat-list-item>
+                    <mat-list-item>
+                        <mat-card>Courses </mat-card>
+                    </mat-list-item>
+                    <mat-list-item>
+                        <mat-card>
+                            <span>Notifications </span> 
+                            <span fxFlex></span>
+                            <span class="label label-red"> 10</span>
+                        </mat-card>
+                    </mat-list-item>
+                    
+                
+                </mat-nav-list>
+                <!-- <perfect-scrollbar class="scbar" [config]="config">
+                    <app-vertical-sidebar class="app-sidebar" (notify)="snav.toggle()">
                     </app-vertical-sidebar>
-                </perfect-scrollbar>
+                   
+                </perfect-scrollbar> -->
 
-                <ng-template #horizontalsidebar>
-                    <app-horizontal-sidebar></app-horizontal-sidebar>
-                </ng-template>
+                
+
             </mat-sidenav>
 
             <!-- ============================================================== -->
-            <!-- Sidebar - style you can find in sidebar.scss -->
+            <!-- Settigns Sidebar - style you can find in sidebar.scss -->
             <!-- ============================================================== -->
             <!-- ============================================================== -->
             <!-- Right Sidebar - style you can find in rightsidebar.component.scss -->
@@ -109,10 +143,7 @@
                             <mat-slide-toggle color="warn" [(ngModel)]="horizontal">
                                 Horizontal Layout</mat-slide-toggle>
                         </mat-list-item>
-                        <mat-list-item>
-                            <mat-slide-toggle color="warn" (change)="dir = (dir == 'rtl' ? 'ltr' : 'rtl')">RTL
-                            </mat-slide-toggle>
-                        </mat-list-item>
+                        
                         <mat-list-item>
                             <mat-slide-toggle color="warn" [(ngModel)]="boxed">Boxed Layout</mat-slide-toggle>
                         </mat-list-item>
@@ -142,10 +173,11 @@
                         </mat-list-item>
 
                         <mat-list-item>
-                            <mat-checkbox color="warn" [(ngModel)]="dark" (change)="darkClick()">Dark
-                            </mat-checkbox>
-
-
+                            
+                            <mat-slide-toggle color="warn" [(ngModel)]="dark" (change)="darkClick()"> Dark
+                            </mat-slide-toggle>
+                            
+                            
                             <!-- <mat-checkbox color="warn" [(ngModel)]="dark" (change)="green = blue = danger = false">Dark</mat-checkbox> -->
 
                         </mat-list-item>
@@ -156,9 +188,9 @@
             <!-- ============================================================== -->
             <!-- Page container - style you can find in pages.scss -->
             <!-- ============================================================== -->
-            <mat-sidenav-content class="page-wrapper" [ngClass]="status ? 'minitoggle' : ''">
+            <mat-sidenav-content>
 
-                <app-breadcrumb></app-breadcrumb>
+                <!-- <app-breadcrumb></app-breadcrumb> -->
                 <div class="page-content">
                     <router-outlet>
                         <app-spinner></app-spinner>

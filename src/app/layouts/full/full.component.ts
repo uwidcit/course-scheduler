@@ -15,7 +15,20 @@ import { PerfectScrollbarConfigInterface, PerfectScrollbarDirective } from 'ngx-
 @Component({
 	selector: 'app-full-layout',
 	templateUrl: 'full.component.html',
-	styleUrls: []
+	styles: [`	
+				.topbar{
+					height: 8vh;
+				}
+				.navbar-brand{ 
+				}
+				.page-content{
+					height: 91vh;
+					padding: 0 !important;
+				}
+				#account_icon{
+					transform: scale(2);
+				}
+	`]
 })
 export class FullComponent implements OnDestroy {
 	mobileQuery: MediaQueryList;

@@ -1,0 +1,23 @@
+<!-- ============================================================== -->
+                <!-- Search - style you can find in header.scss -->
+                <!-- ============================================================== -->
+                <button mat-icon-button class="srh-btn" (click)="showSearch = !showSearch">
+                    <mat-icon>search</mat-icon>
+                </button>
+                <form class="app-search" [ngClass]="{'show-search': showSearch}">
+                    <input type="text" class="form-control" placeholder="Search &amp; enter">
+                    <a class="cl-srh-btn" (click)="showSearch = !showSearch">
+                        <i class="ti-close"></i>
+                    </a>
+                </form>
+                
+
+                <!-- Navbar Icon -->
+                <b>
+                    <!--You can put here icon as well // <i class="wi wi-sunset"></i> //-->
+                    <!-- Dark Logo icon -->
+                    <img src="assets/images/logo-icon.png" alt="homepage" class="dark-logo">
+                    <!-- Light Logo icon -->
+                    <img src="assets/images/logo-light-icon.png" alt="homepage" class="light-logo">
+                </b>
+                <!--End Logo icon -->

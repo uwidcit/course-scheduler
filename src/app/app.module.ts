@@ -9,7 +9,7 @@ import { AppComponent } from './app.component';
 
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { FullComponent } from './layouts/full/full.component';
-import { AppBlankComponent } from './layouts/blank/blank.component';
+import {  CalendarModal } from './layouts/calendarModal/calendarModal.component';
 
 import { VerticalAppHeaderComponent } from './layouts/full/vertical-header/vertical-header.component';
 import { VerticalAppSidebarComponent } from './layouts/full/vertical-sidebar/vertical-sidebar.component';
@@ -32,6 +32,7 @@ import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 
 
+
 export function HttpLoaderFactory(http: HttpClient) {
   return new TranslateHttpLoader(http, './assets/i18n/', '.json');
 }
@@ -48,7 +49,7 @@ const DEFAULT_PERFECT_SCROLLBAR_CONFIG: PerfectScrollbarConfigInterface = {
     FullComponent,
     VerticalAppHeaderComponent,
     SpinnerComponent,
-    AppBlankComponent,
+    CalendarModal,
     VerticalAppSidebarComponent,
     AppBreadcrumbComponent,
     HorizontalAppHeaderComponent,

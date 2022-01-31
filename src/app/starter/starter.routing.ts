@@ -7,7 +7,7 @@ export const StarterRoutes: Routes = [
         path: '',
         component: StarterComponent,
         data: {
-            title: 'Starter Page',
+            title: 'Calendar View',
             urls: [
                 { title: 'Dashboard', url: '/dashboard' },
                 { title: 'Starter Page' }
