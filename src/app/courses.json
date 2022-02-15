@@ -1,0 +1,186 @@
+{
+    "courses": {
+        "COMP1600":{ 
+            "name" : "Introduction to Computing Concepts", 
+            "faculty": "FST", 
+            "degrees":["BSc COMPUTER SCIENCE (SPECIAL)","BSc COMPUTER SCIENCE WITH MANAGEMENT (SPECIAL)", "Major in Computer Science","BSc INFORMATION TECHNOLOGY (SPECIAL)"], 
+             "campus": "sta"  
+            },
+        "COMP1601":{ 
+            "name" : "Computer Programming I", 
+            "faculty": "FST", 
+            "degrees":["BSc COMPUTER SCIENCE (SPECIAL)","BSc COMPUTER SCIENCE WITH MANAGEMENT (SPECIAL)","Major in Computer Science","BSc INFORMATION TECHNOLOGY (SPECIAL)","BSc ACTUARIAL SCIENCE (SPECIAL)", "BSc MATHEMATICS (SPECIAL)"], 
+             "campus": "sta"  
+            },
+        "INFO1600":{ 
+            "name" : "Introduction to Information Technology Concepts", 
+            "faculty": "FST", 
+            "degrees":["BSc COMPUTER SCIENCE (SPECIAL)","BSc INFORMATION TECHNOLOGY (SPECIAL)"], 
+             "campus": "sta"  
+            },
+        "MATH1115":{ 
+            "name" : "Fundamental Mathematics for the General Sciences I", 
+            "faculty": "FST", 
+            "degrees":["BSc COMPUTER SCIENCE (SPECIAL)","BSc INFORMATION TECHNOLOGY (SPECIAL)"], 
+             "campus": "sta"  
+            },
+        
+            "MATH1142":{ 
+                "name" : "Calculus I", 
+                "faculty": "FST", 
+                "degrees":["BSc ACTUARIAL SCIENCE (SPECIAL)", "BSc MATHEMATICS (SPECIAL)"], 
+                 "campus": "sta"  
+                },
+            "MATH1152":{ 
+                "name" : "Sets and Number Systems", 
+                "faculty": "FST", 
+                "degrees":["BSc ACTUARIAL SCIENCE (SPECIAL)", "BSc MATHEMATICS (SPECIAL)"], 
+                 "campus": "sta"  
+                },
+            "MATH1192":{ 
+                "name" : "Mathematical Software I (Excel)", 
+                "faculty": "FST", 
+                "degrees":["BSc ACTUARIAL SCIENCE (SPECIAL)", "BSc MATHEMATICS (SPECIAL)"], 
+                 "campus": "sta"  
+                },
+            "ACCT1002":{ 
+                "name" : "Introduction to Financial Accounting", 
+                "faculty": "FST", 
+                "degrees":["BSc ACTUARIAL SCIENCE (SPECIAL)"], 
+                 "campus": "sta"  
+                }
+    },
+
+
+
+
+    "coursesPerProgramme":{
+        "BSc COMPUTER SCIENCE (SPECIAL)":{
+            "COMP1600" : {
+                "type" : "core", 
+                "offeredIn": [{"year": 1, "semester":1}] 
+            },
+         
+            "COMP1601" : {
+                "type" : "core", 
+                "offeredIn": [{"year": 1, "semester":1}] 
+            },
+         
+            "INFO1600" : {
+                "type" : "core", 
+                "offeredIn": [{"year": 1, "semester":1}] 
+            },
+         
+            "MATH1115" : {
+                "type" : "core", 
+                "offeredIn": [{"year": 1, "semester":1}] 
+            }
+        },
+        "BSc COMPUTER SCIENCE WITH MANAGEMENT (SPECIAL)":{
+            "COMP1600" : {
+                "type" : "core", 
+                "offeredIn": [{"year": 1, "semester":1}] 
+            },
+         
+            "COMP1601" : {
+                "type" : "core", 
+                "offeredIn": [{"year": 1, "semester":1}] 
+            }
+        },
+        "Major in Computer Science":{
+            "COMP1600" : {
+                "type" : "core", 
+                "offeredIn": [{"year": 1, "semester":1}] 
+            },
+         
+            "COMP1601" : {
+                "type" : "core", 
+                "offeredIn": [{"year": 1, "semester":1}] 
+            }
+        },
+        "BSc INFORMATION TECHNOLOGY (SPECIAL)":{
+            "COMP1600" : {
+                "type" : "core", 
+                "offeredIn": [{"year": 1, "semester":1}] 
+            },
+         
+            "COMP1601" : {
+                "type" : "core", 
+                "offeredIn": [{"year": 1, "semester":1}] 
+            },
+         
+            "INFO1600" : {
+                "type" : "core", 
+                "offeredIn": [{"year": 1, "semester":1}] 
+            },
+         
+            "MATH1115" : {
+                "type" : "core", 
+                "offeredIn": [{"year": 1, "semester":1}] 
+            }
+        },
+        "BSc ACTUARIAL SCIENCE (SPECIAL)":{
+            "COMP1601" : {
+                "type" : "core", 
+                "offeredIn": [{"year": 1, "semester":1}] 
+            },
+            "ACCT 1002" : {
+                "type" : "core", 
+                "offeredIn": [{"year": 1, "semester":1}] 
+            },
+            "MATH1142" : {
+                "type" : "core", 
+                "offeredIn": [{"year": 1, "semester":1}] 
+            },
+         
+            "MATH1152" : {
+                "type" : "core", 
+                "offeredIn": [{"year": 1, "semester":1}] 
+            },
+         
+            "MATH1192" : {
+                "type" : "core", 
+                "offeredIn": [{"year": 1, "semester":1}] 
+            }
+        },
+        "BSc MATHEMATICS (SPECIAL)":{
+            "COMP1601" : {
+                "type" : "core", 
+                "offeredIn": [{"year": 1, "semester":1}] 
+            },
+            "MATH1142" : {
+                "type" : "core", 
+                "offeredIn": [{"year": 1, "semester":1}] 
+            },
+         
+            "MATH1152" : {
+                "type" : "core", 
+                "offeredIn": [{"year": 1, "semester":1}] 
+            },
+         
+            "MATH1192" : {
+                "type" : "core", 
+                "offeredIn": [{"year": 1, "semester":1}] 
+            }
+        }
+
+    },
+    "events": {
+        "" :{
+            "title": "Test Json",
+            
+            "start": "2022-02-01T10:30:00",
+            "end": "2022-02-02T13:30:00",
+            "overlap": false,  
+            "allDaySlot": false,
+            "displayEventTime": true,
+            "editable": true,
+            "extendedProps": {
+            "course": "COMP1601",
+            "eventType": "Assignment",
+            "details": "",
+            "createdBy" : "test@gmail.com"
+            }
+        }
+    }
+}

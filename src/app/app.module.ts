@@ -30,6 +30,8 @@ import { PerfectScrollbarConfigInterface } from 'ngx-perfect-scrollbar';
 
 import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
+import { FirebaseDBServiceService } from './services/firebase-dbservice.service';
+import { PromptDialogComponent } from './layouts/prompt-dialog/prompt-dialog.component';
 
 
 
@@ -53,7 +55,8 @@ const DEFAULT_PERFECT_SCROLLBAR_CONFIG: PerfectScrollbarConfigInterface = {
     VerticalAppSidebarComponent,
     AppBreadcrumbComponent,
     HorizontalAppHeaderComponent,
-    HorizontalAppSidebarComponent
+    HorizontalAppSidebarComponent,
+    PromptDialogComponent,
   ],
   imports: [
     BrowserModule,
@@ -79,7 +82,8 @@ const DEFAULT_PERFECT_SCROLLBAR_CONFIG: PerfectScrollbarConfigInterface = {
     {
       provide: PERFECT_SCROLLBAR_CONFIG,
       useValue: DEFAULT_PERFECT_SCROLLBAR_CONFIG
-    }
+    },
+    FirebaseDBServiceService
   ],
   bootstrap: [AppComponent]
 })
