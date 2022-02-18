@@ -1,0 +1,56 @@
+<div class="container">
+    <!-- TO display degree List -->
+    <div class="side" >
+        <div *ngIf="degrees.length > 0 then list; else noList"> </div>
+    </div>
+    
+    <!-- For selected degree -->
+    <main >
+        <mat-toolbar> 
+            <div class="spacer"></div>
+            <mat-icon aria-hidden="false" aria-label="add icon">add</mat-icon>
+            <mat-icon > search</mat-icon>
+        </mat-toolbar>
+         <div *ngIf="selected!='' then selected; else notSelected;"></div>
+    </main>
+
+</div>
+
+
+
+
+<ng-template #list>
+    <mat-selection-list #degreeList [multiple]="false" [value]="selected">
+        <mat-list-option *ngFor="let degree of degrees" [value]="degree.name">
+            {{degree.name}}
+        </mat-list-option>
+    </mat-selection-list>
+</ng-template>
+
+<ng-template #noList>
+    <app-spinner> </app-spinner>
+</ng-template>
+
+<ng-template #selected>
+    <table matSort (matSortChange)="sortData($event)">
+        <tr>
+          <th mat-sort-header="code">Course Code</th>
+          <th mat-sort-header="name">Name</th>
+          <th mat-sort-header="type">Type</th>
+          <th mat-sort-header="year">Year</th>
+          <th mat-sort-header="semester">Semester</th>
+        </tr>
+      
+        <tr *ngFor="let degree of degrees">
+          <td>{{degree.name}}</td>
+          <td>{{degree.calories}}</td>
+          <td>{{degree.fat}}</td>
+          <td>{{degree.carbs}}</td>
+          <td>{{degree.protein}}</td>
+        </tr>
+      </table>
+</ng-template>
+<ng-template #notSelected>
+    <div class="none"> Select a programme</div>
+</ng-template>
+

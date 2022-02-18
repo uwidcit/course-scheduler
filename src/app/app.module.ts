@@ -33,7 +33,14 @@ import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 import { FirebaseDBServiceService } from './services/firebase-dbservice.service';
 import { PromptDialogComponent } from './layouts/prompt-dialog/prompt-dialog.component';
 
+import { initializeApp,provideFirebaseApp } from '@angular/fire/app';
+import { provideAuth,getAuth } from '@angular/fire/auth';
+import { environment } from 'src/environments/environment';
 
+import { HotToastModule } from '@ngneat/hot-toast';
+import { LoginComponent } from './layouts/login/login.component';
+import { ReactiveFormsModule } from '@angular/forms';
+import { ProgrammeComponent } from './layouts/programme/programme.component';
 
 export function HttpLoaderFactory(http: HttpClient) {
   return new TranslateHttpLoader(http, './assets/i18n/', '.json');
@@ -57,6 +64,8 @@ const DEFAULT_PERFECT_SCROLLBAR_CONFIG: PerfectScrollbarConfigInterface = {
     HorizontalAppHeaderComponent,
     HorizontalAppSidebarComponent,
     PromptDialogComponent,
+    LoginComponent,
+    ProgrammeComponent,
   ],
   imports: [
     BrowserModule,
@@ -76,7 +85,11 @@ const DEFAULT_PERFECT_SCROLLBAR_CONFIG: PerfectScrollbarConfigInterface = {
         useFactory: HttpLoaderFactory,
         deps: [HttpClient]
       }
-    })
+    }),
+    provideFirebaseApp(() => initializeApp(environment.firebase)),
+    provideAuth(() => getAuth()),
+    HotToastModule.forRoot(),
+    ReactiveFormsModule
   ],
   providers: [
     {

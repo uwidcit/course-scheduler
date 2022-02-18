@@ -1,10 +1,16 @@
 import { Routes } from '@angular/router';
+import { ProgrammeComponent } from '../layouts/programme/programme.component';
 
 import { StarterComponent } from './starter.component';
 
 export const StarterRoutes: Routes = [
     {
         path: '',
+        redirectTo: '/calendar',
+        pathMatch: 'full'
+    },
+    {
+        path: 'calendar',
         component: StarterComponent,
         data: {
             title: 'Calendar View',
@@ -13,5 +19,9 @@ export const StarterRoutes: Routes = [
                 { title: 'Starter Page' }
             ]
         }
+    },
+    {
+        path: 'programmes',
+        component: ProgrammeComponent
     }
 ];

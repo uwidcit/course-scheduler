@@ -11,7 +11,7 @@ import { environment } from 'src/environments/environment';
 })
 export class FirebaseDBServiceService {
 
-  app = initializeApp(environment.firebaseConfig);
+  app = initializeApp(environment.firebase);
   analytics = getAnalytics(this.app);
 // Get a reference to the database service
   public dbRef = getDatabase(this.app);

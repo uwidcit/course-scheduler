@@ -9,5 +9,13 @@ export const environment = {
     messagingSenderId: "109703980334",
     appId: "1:109703980334:web:8a3f0c7c1942a9919386bf",
     measurementId: "G-YGBC6ZK574"
-  }
+  },
+  firebase :{
+    apiKey: "AIzaSyAUSEWMqWLzoXRME2YHmvj1H8nTErrJgFI",
+    authDomain: "scheduler-authentication.firebaseapp.com",
+    projectId: "scheduler-authentication",
+    storageBucket: "scheduler-authentication.appspot.com",
+    messagingSenderId: "89521061793",
+    appId: "1:89521061793:web:9f5930ed00a5bb1a4655e0"
+  },
 };

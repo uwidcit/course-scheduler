@@ -75,7 +75,7 @@ export class CalendarModal implements OnInit {
     // this.end =  `${this.data.end}`
 
     this.course = this.data.extendedProps ? this.data.extendedProps.course : '';
-    this.eventType = this.data.extendedProps ? this.data.extendedProps.eventType  : '';
+    this.eventType = this.data.extendedProps ? this.data.extendedProps.eventType  : 'Assignment';
     this.details = this.data.extendedProps ? this.data.extendedProps.details  : '';
     this.createdBy = this.data.extendedProps ? this.data.extendedProps.createdBy  : '';
 

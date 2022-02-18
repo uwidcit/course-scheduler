@@ -404,7 +404,7 @@ export class CalendarComponent implements OnInit {
     });
   }
 
-  async getOverlappingEvents(newEvent: any, eventObj: any, oldArr: string[]){
+  async getOverlappingEvents(newEvent: any, eventObj: any, oldArr: {title: string, type: string}[]){
     let degreeMatches: string[] ;
     let overlaps: any = [];
     //Check for event overlap && courses are within same degree
@@ -419,7 +419,10 @@ export class CalendarComponent implements OnInit {
         let course2:any = await this.firebase.getDegreeCourse(degree, eventObj.extendedProps.course)
         
         if( !match && course1.type == "core" && course2.type == "core" && this.compareCoursePeriod(course1.offeredIn, course2.offeredIn) ){
-          overlaps.push(eventObj.title)
+          overlaps.push({ 
+            title: eventObj.title,
+            type: course2.type 
+          })
           match = true
         }
       }
@@ -439,7 +442,7 @@ export class CalendarComponent implements OnInit {
   async editEvents(newEvent: { title: string; }, isUpdate: boolean ){
     this.displayMessage(`Checking for clahses with ${newEvent.title} ...`)
 
-        let eventOverlaps: string[] = [] //DialogData[] = []
+        let eventOverlaps: {title: string, type: string}[] = [] //DialogData[] = []
         
 
         // this.localEvents.forEach( async(eventObj: any )=>{
@@ -458,7 +461,7 @@ export class CalendarComponent implements OnInit {
         //Prompt user if overlaps found, else add event or update if isUpdate
         let userresponse : boolean = true ;
         if( eventOverlaps.length > 0 ){
-          let dialogRef = this.promptDialog.open( PromptDialogComponent, {width: '50vw', data: "Overlapping Events Found"})
+          let dialogRef = this.promptDialog.open( PromptDialogComponent, {width: '50vw', data: eventOverlaps})
           dialogRef.afterClosed().subscribe( (saveEvent : boolean) =>{
             if( !saveEvent) this.displayMessage('Cancelling Update!')
             else if(  !isUpdate && saveEvent )

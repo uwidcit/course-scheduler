@@ -2,8 +2,11 @@
     <h1 mat-dialog-title>Core Courses Event Clash Detected!</h1>
    
   
-  <div mat-dialog-content>
-    {{data}}
+  <div mat-dialog-content class="events">
+    <mat-list role="list" *ngFor="let item of data" >
+      <mat-list-item role="listitem"> {{item.title}} <span [ngClass]="getColor(item.type)">{{item.type}}</span> </mat-list-item>
+    </mat-list>
+    
   </div>
 
   <div mat-dialog-actions>
@@ -13,3 +16,4 @@
     <button mat-button (click)="onCancel()">Cancel</button>
   </div>
 </div>
+
