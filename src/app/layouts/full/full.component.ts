@@ -28,6 +28,22 @@ import { PerfectScrollbarConfigInterface, PerfectScrollbarDirective } from 'ngx-
 				#account_icon{
 					transform: scale(2);
 				}
+
+				mat-card{
+					padding: 10px 5px !important;
+					/* background: #00fa04; */
+					box-shadow: 4px 8px 3px 5px rgb(155 155 155 / 65%) !important;
+				}
+
+				mat-list-item {
+					padding: 0px !important;
+				}
+				mat-card:hover{
+					background: #2fa4e7;
+					color: #fff;
+					transform: scale(1.05);
+					
+				}
 	`]
 })
 export class FullComponent implements OnDestroy {

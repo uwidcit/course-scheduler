@@ -1,0 +1,107 @@
+<!-- <div id="modal_main" > -->
+    <div mat-dialog-title id="header">
+      <h1 mat-dialog-title *ngIf="!data.update" >New Programme</h1>
+      <h3 mat-dialog-title *ngIf="data.update" >Updating "{{data.title}}" Programme</h3>
+      <div class="spacer" ></div>
+      <button mat-button (click)="onNoClick()"><mat-icon>close</mat-icon></button>
+    </div>
+    
+    <div mat-dialog-content>
+    <p>
+      <mat-form-field appearance="outline" fxFlex="35">
+        <mat-label>Programme Name</mat-label>
+        <input placeholder="Bsc in Computer Science" matInput type="text" [(ngModel)]="name" cdkFocusInitial>
+        <button *ngIf="name" matSuffix mat-icon-button aria-label="Clear" (click)="name=''">
+          <mat-icon>close</mat-icon>
+        </button>
+        
+        <mat-hint>E.g Bsc in Computer Science</mat-hint>
+      </mat-form-field>
+      
+      
+    </p>
+  
+    <table>
+        <thead>
+            <tr>
+                <th >Course Code</th>
+                <th >Course Type</th>
+                <th >Offered In</th>
+                <th> <div class="spacer"></div> </th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr id="inputs"> 
+                <td>
+                    <mat-form-field appearance="fill">
+                        <mat-label>Select Course</mat-label>
+                        <mat-select [(ngModel)]="newCourse">
+                          <mat-option *ngFor="let course of courses" [value]="course">
+                            {{course}}
+                          </mat-option>
+                        </mat-select>
+                      </mat-form-field>
+                </td>
+                <td>
+                    <mat-form-field appearance="fill">
+                        <mat-label>Select Type</mat-label>
+                        <mat-select [(ngModel)]="courseType" >
+                          <mat-option value="core" >
+                            Core
+                          </mat-option>
+                          <mat-option value="elective">
+                            Elective
+                          </mat-option>
+                        </mat-select>
+                      </mat-form-field>
+                </td>
+                <!-- <td>
+                    <mat-form-field appearance="fill">
+                        <mat-label>Select Course</mat-label>
+                        <mat-select [(ngModel)]="newCourse">
+                          <mat-option *ngFor="let course of courses" [value]="course">
+                            {{course}}
+                          </mat-option>
+                        </mat-select>
+                      </mat-form-field>
+                </td> -->
+                <td>
+                    <mat-form-field appearance="fill">
+                        <mat-label>Select Period</mat-label>
+                        <mat-select [(ngModel)]="coursePeriod" multiple>
+                          <mat-option *ngFor="let period of periodGroups" [value]="period.value">
+                            {{period.viewValue}}
+                          </mat-option>
+                        </mat-select>
+                      </mat-form-field>
+                </td>
+                <td (click)="addCourse()">
+                    <mat-icon matSuffix aria-hidden="false" aria-label="add icon" >add</mat-icon>
+                </td>
+            </tr>
+            <tr *ngFor="let course of degreeCourses; index as i">
+                <td>
+                    {{course.name}}
+                </td>
+                <td>
+                    {{course.type}}
+                </td>
+                <td>
+                    <p *ngFor="let p of course.offeredIn"> Year{{p.year}}/ Semester{{p.semester}}</p>
+                </td>
+                <td (click)="removeRow(i)">
+                    <mat-icon matSuffix aria-hidden="false" aria-label="delete icon" >delete</mat-icon>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    
+    </div>
+    <div mat-dialog-actions>
+      
+      <button mat-button (click)="onSave()">Save</button>
+      <div class="spacer" ></div>
+      <button mat-button (click)="onNoClick()">Cancel</button>
+      <!-- <button mat-button *ngIf="data.update" (click)="onDelete()">Delete</button> -->
+    </div>
+  <!-- </div> -->

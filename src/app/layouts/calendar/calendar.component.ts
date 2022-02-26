@@ -3,11 +3,30 @@ import { CalendarOptions, FullCalendarComponent } from '@fullcalendar/angular';
 import  { eventList } from '../../events';
 import {MatDialog} from '@angular/material/dialog';
 import { CalendarModal } from '../calendarModal/calendarModal.component';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { FirebaseDBServiceService } from 'src/app/services/firebase-dbservice.service';
+import {  child, onValue, push, ref, set } from "firebase/database";
+import { PromptDialogComponent } from '../prompt-dialog/prompt-dialog.component';
 
 export interface DialogData {
   //date : Date; 
-  dateStr :String;
+  //dateStr :string;
+  id: string;
+  start: string;
+  end : string;
   allDay:boolean ;
+  title:string;
+  backgroundColor: string;
+  extendedProps: { course: string,
+                    eventType : String,
+                    details: String,
+                    createdBy : String} ;
+  courseList :string[];
+  update: Boolean;
+}
+
+export interface Course{
+
 }
 
 @Component({
@@ -22,11 +41,21 @@ export interface DialogData {
       full-calendar{
         max-height: 88vh;
       }
-
       
+      .calendar_modal{
+        background: rgba( 248, 248, 248, 0.5 ) !important;
+        box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 ) !important;
+        backdrop-filter: blur( 2px ) !important;
+        -webkit-backdrop-filter: blur( 2px ) !important;
+        border-radius: 10px !important;
+        border: 1px solid rgba( 255, 255, 255, 0.18 ) !important;
+      }
   `]
 })
 export class CalendarComponent implements OnInit {
+
+  courses: any; //JSON OBject of courses
+
   @ViewChild('calendar')
   calendarComponent!: FullCalendarComponent;
 
@@ -40,30 +69,60 @@ export class CalendarComponent implements OnInit {
                     }
                   }
 
-  localEvents = eventList            
-  constructor(private dialog: MatDialog ) { 
+  //localEvents = eventList    
+  localEvents : JSON[] = [] ;        
+  constructor(private dialog: MatDialog, private promptDialog: MatDialog, private snackBar : MatSnackBar, private firebase: FirebaseDBServiceService ) { 
+    
+    //Get Firebase data
+    const tablesRef = ref(this.firebase.dbRef);
+    onValue(tablesRef, (snapshot) => {
+      this.localEvents.length = 0;
+      const data = snapshot.val();
+      this.courses = data.courses;
+      
+      if ( !data.events || !data.courses  )return 
+
+      console.log(data.events)
+      Object.entries(data.events).forEach( (entry: any)=>{
+        const [key, value] = entry;
+        this.localEvents.push(value)
+      })
+      
+      
+      
+      //this.localEvents = data.events
+    });
+
+    
 
     //define Calendar Options
     this.calendarOptions = {
       initialView: 'dayGridMonth',
       height: "auto",
+      eventChange: function ( arg){ console.log('Changed ',arg.event)},
+      eventClick: this.handleEventClick.bind(this),
+      //eventMouseEnter: this.handleEventHover.bind(this),
+      eventResize: this.handleEventResize.bind(this),
+      eventDrop: this.handleEventDrop.bind(this), //function (arg) { console.log('Darg & Dropped Event' ,arg)},
       dateClick: this.handleDateClick.bind(this), // bind to handle any click on calendar important!
       events: this.localEvents,
       customButtons: {
         myCustomButton: this.customButton
       },
       headerToolbar: {
-        left: 'dayGridMonth timeGridWeek timeGridDay',
+        left: 'today,timeGridDay,dayGridMonth,timeGridWeek,listMonth', //timeGridDay  listWeek
         center: 'title',
-        right: 'today prev,next'
+        right: 'prev,next'
       },
       // dayPopoverFormat: {
       //   month: 'numeric',
       //   day: 'numeric',
       //   year: 'numeric',
       // },
+      editable: true,
       slotEventOverlap: true,
-      allDaySlot: true
+      allDaySlot: true,   //to display all day events at the top in "allday" for week & day view
+      eventDisplay: "block"   //display the event as a block on daygrid & normal on other views
     };
 
   } //end of constructor
@@ -73,37 +132,43 @@ export class CalendarComponent implements OnInit {
     
   }
 
-  openDialog( arg : { dateStr :String, allDay:boolean }): void {
+  openDialog( arg : any): void {   // Type: { start :String, end :String, allDay:boolean, title:String, backgroundColor: String, extendedProps: {} }
     const dialogRef = this.dialog.open(CalendarModal, {
-      width: '50vw',
+      width: '80vw',
       data: arg,
+      panelClass: 'calendar_modal'
     });
 
-    dialogRef.afterClosed().subscribe( ( result) => {
+    dialogRef.afterClosed().subscribe( async( result) => {
       console.log('The dialog was closed');
       console.log(`Dialog Result: ${JSON.stringify(result)}`)
       //this.title = result.title;
-      if ( result !=null ){
-        let newEvent = {
+      if( result !=null && result.delete){
+        let eventTitle = result.title
+        this.firebase.deleteEvent(result.id)
+        this.displayMessage(`${eventTitle} was deleted!`)
+      }
+      else if ( result !=null && !result.delete ){
+        let newEvent :any = {
+          id : (result.id ? result.id : ''),
           title: result.title, 
           start: result.start,
           end: result.end,
           allDay: result.allDay,
+          backgroundColor: result.backgroundColor,
+          overlap: result.overlap,
           displayEventTime: true,
           editable: true,
-          extendedProps: {
-            // department: "BioChemistry",
-            // eventType: "Assignment"
-            }
+          extendedProps: result.extendedProps
         }
-         
-         this.localEvents.push(result)
+
+        await this.editEvents( newEvent , result.update)
          //this.calendarOptions.eventSources?.push(result);//this.localEvents
       }
       else {
 
         if ( result == null || result ==undefined  )
-          console.log('cancelled!')
+        this.displayMessage('Modal Closed')
         else
           console.log("invalid Event entry")
       }
@@ -123,17 +188,322 @@ export class CalendarComponent implements OnInit {
     // console.log(arg); // {date : Date, dateStr :String, allDay:boolean }
     // console.log( typeof(arg.date))  //object
     
-    let dateSplit:any = arg.dateStr.match(/\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2})?/)
-    let newDate:String = dateSplit[0]
+    //Search for a date in the format '2022-02-01T00:00:00'
+    // let dateSplit:any = arg.dateStr.match(/\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2})?/)
+    // let newDate:String = dateSplit[0]
 
-    console.log(dateSplit[0])
+    let correctDateFormat = this.getDateStringFormat(arg.dateStr)
+    //console.log(dateSplit[0])
+    let courseNames :String[] = []
+
+    //add courses to array
+    Object.entries(this.courses).forEach( (course: any)=>{
+      const [key, value] = course;
+      courseNames.push(key)
+    })
     let data = {
-      dateStr:  newDate.includes('T') ?  newDate : newDate + 'T00:00:00' ,
-      allDay: arg.allDay
+      start:  correctDateFormat ,
+      end:  correctDateFormat ,
+      allDay: arg.allDay,
+      courseList : courseNames,
+      update: false  //if it's a new event
     }
     this.openDialog( data ) 
   }
 
+  handleEventClick( eventInfo: any ){
+    //alert(" You clicked an event")
+    console.log(eventInfo)
+
+    
+    let event = eventInfo.event
+
+    if( !event.startEditable ) return;
+
+    let courseNames :String[] = []
+
+    //add courses to array
+    Object.entries(this.courses).forEach( (course: any)=>{
+      const [key, value] = course;
+      courseNames.push(key)
+    })
+    
+    console.log(' Opening Dialog with ', event)
+    this.openDialog( {
+      title: event.title,
+      start: this.getDateStringFormat(event.startStr) ,  //startStr is in the format "2022-02-19" && start is the date object
+      end: this.getDateStringFormat(event.endStr),   //endStr is in the format "2022-02-19" && end is the date object
+      allDay: event.allDay,
+      id: event.id,
+      //displayEventTime: event.displayEventTime,
+      // editable: true,
+      // overlap: true,
+      //allow: Identity<AllowFunc>;
+      //className: typeof parseClassNames;
+     // classNames: typeof parseClassNames;
+     // color: StringConstructor;
+      backgroundColor: event.backgroundColor ,
+      extendedProps: event.extendedProps,
+      courseList : courseNames,
+      update : true
+    });
+  }
+
+  handleEventHover( eventInfo: any){
+    console.log( eventInfo )
+    // let dateSplit:any = eventInfo.event.start.match(/\w+\s*\w+\s*\d{2}/)
+    // let start = dateSplit[0];  // to get the First part of the date: 'Wed Feb 02
+    
+    // dateSplit = eventInfo.event.start.match(/\w+\s*\w+\s*\d{2}\s*\d{4}/)
+    // let end = dateSplit[0];
+    
+    // let start_date : String = eventInfo.event.start.toUTCString().replace(',', '')
+    // let end_date : String = eventInfo.event.end.toUTCString().replace(',', '')
+
+    let displayMsg ;
+    if (eventInfo.event.start && eventInfo.event.end){
+        //get only date from string
+      let start_date : String = eventInfo.event.start.toDateString()
+      let end_date : String = eventInfo.event.end.toDateString()
+
+      // let dateSplit:any = start_date.match(/\w+\s*\d{2}\s*\w+/)
+      // start_date = dateSplit[0];  // to get the First part of the date: 'Wed Feb 02
+      
+      // dateSplit = end_date.match(/\w+\s*\d{2}\s*\w+\s*\d{4}/)
+      // end_date = dateSplit[0];
+
+      if ( start_date == end_date ){
+        let time: String = eventInfo.event.start.toTimeString()
+        let startTime = time.split(' ')[0]
+
+        time= eventInfo.event.end.toTimeString()
+        let endTime = time.split(' ')[0]
+        displayMsg = `${eventInfo.event.title} by Jerry \n Duration: ${start_date} ${startTime}- ${endTime}`
+      }
+      else
+      displayMsg = `${eventInfo.event.title} by Jerry \n
+      Duration: ${start_date} - ${end_date}`
+      
+    }
+
+    else 
+      displayMsg = eventInfo.event.title
+
+    console.log(eventInfo.event.start, '\n', eventInfo.event.end  )
+    
+    this.displayMessage(displayMsg)
+    // let snackBarRef = this.snackBar.open(displayMsg, 'Close',{ duration: 3000})
+
+    // //listen for close event
+    // snackBarRef.onAction().subscribe(() => {
+    //   snackBarRef.dismiss(); 
+    // });
+  }
+
+  
+
+  getDateStringFormat( dateStr : String ){
+    //search for data format
+    let dateSplit:any = dateStr.match(/\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2})?/)
+    let newDate:String = dateSplit[0]
+
+    
+    return newDate.includes('T') ?  newDate : newDate + 'T00:00:00' 
+     
+  }
+  
+  writeEvent(newEvent : any) {
+    // Get a key for a new Post.
+    const newPostKey = push(child(ref(this.firebase.dbRef), 'events')).key;
+    newEvent.id = newPostKey
+    set(ref(this.firebase.dbRef, 'events/' + newPostKey ), newEvent);
+  }
+
+  updateEvent( newEvent: any){
+    // Write the new post's data simultaneously in the posts list and the user's post list.
+  
+
+    set(ref(this.firebase.dbRef, 'events/' + newEvent.id), newEvent);
+  }
+
+
+  checkForOverlap(eventA : DialogData, eventB : DialogData){
+    let startA = Date.parse(`${eventA.start}`)
+    let startB = Date.parse(`${eventB.start}`)
+
+    let endA = Date.parse(`${eventA.end}`)
+    let endB = Date.parse(`${eventB.end}`)
+    //console.log( 'Event A Dates: ' ,startA, endA)
+    //console.log( 'Event B Dates: ' ,startA, endA)
+
+    if( startA <= endB && endA >= startB )
+      return true
+      //console.log( eventA.title, ' overlaps ', eventB.title)
+    
+      return false
+  }
+
+  checkDegree( course1:string, course2: string){
+
+    let arr1 : string[] = this.courses[course1].degrees
+    let arr2: string[] = this.courses[course2].degrees
+
+    console.log( course1, ' degrees: ', arr1)
+    console.log( course2, ' degrees: ', arr2)
+    
+    let match : string[] = []
+
+    for( let entry of arr1 ){
+      console.log( entry)
+      if( arr2.includes(entry) )
+          match.push(entry)
+    }
+    return match;
+  }
+
+  compareCoursePeriod( course1: any, course2: any ){
+    for( let periodA of course1 )
+      for ( let periodB of course2 ){
+        if( periodA.year == periodB.year && periodA.semester == periodB.semester)
+          return true
+      }
+
+    return false
+  }
+
+  async handleEventResize(eventInfo: any ){
+    //console.log(eventInfo)
+
+    
+    let event = eventInfo.event
+
+    //console.log("Resized Event",event)
+    let newEvent :any = {
+      id : (event.id ? event.id : ''),
+      title: event.title, 
+      start: this.getDateStringFormat(event.startStr) ,  //startStr is in the format "2022-02-19" && start is the date object
+      end: this.getDateStringFormat(event.endStr),   //endStr is in the format "2022-02-19" && end is the date object
+      allDay: event.allDay,
+      backgroundColor: event.backgroundColor,
+      overlap: event.overlap,
+      displayEventTime: true,
+      editable: true,
+      extendedProps: event.extendedProps
+    }
+
+    await this.editEvents( newEvent , true); //update = true
+
+  }
+
+  displayMessage(message: string){
+    let snackBarRef = this.snackBar.open(message, 'Close',{ duration: 3000})
+
+    //listen for close event
+    snackBarRef.onAction().subscribe(() => {
+      snackBarRef.dismiss(); 
+    });
+  }
+
+  async getOverlappingEvents(newEvent: any, eventObj: any, oldArr: {title: string, type: string}[]){
+    let degreeMatches: string[] ;
+    let overlaps: any = [];
+    //Check for event overlap && courses are within same degree
+    if ( newEvent.id != eventObj.id && this.checkForOverlap(newEvent, eventObj)  ){
+
+      degreeMatches  = this.checkDegree(newEvent.extendedProps.course, eventObj.extendedProps.course)//get 2 courses in degree
+      
+      if( degreeMatches.length == 0 ) return;
+      let match = false;
+      for( let degree of degreeMatches){
+        let course1:any = await this.firebase.getDegreeCourse(degree, newEvent.extendedProps.course)
+        let course2:any = await this.firebase.getDegreeCourse(degree, eventObj.extendedProps.course)
+        
+        if( !match && course1.type == "core" && course2.type == "core" && this.compareCoursePeriod(course1.offeredIn, course2.offeredIn) ){
+          overlaps.push({ 
+            title: eventObj.title,
+            type: course2.type 
+          })
+          match = true
+        }
+      }
+      
+    }
+    
+    //console.log(oldArr == null)
+    
+    //check if event array (oldArr) !=null & join
+    if( oldArr != null )  //check to see if there exist at least one item
+      return overlaps.concat(...oldArr)
+    else 
+      return overlaps
+  }
+
+
+  async editEvents(newEvent: { title: string; }, isUpdate: boolean ){
+    this.displayMessage(`Checking for clahses with ${newEvent.title} ...`)
+
+        let eventOverlaps: {title: string, type: string}[] = [] //DialogData[] = []
+        
+
+        // this.localEvents.forEach( async(eventObj: any )=>{
+        //   
+          
+        // })
+
+        for( let eventObj of this.localEvents )
+          eventOverlaps = await this.getOverlappingEvents(newEvent , eventObj , eventOverlaps)
+        
+
+        console.log( `Event Overlaps: ${eventOverlaps.length}`, eventOverlaps)
+        
+         
+         //this.localEvents.push(result)
+        //Prompt user if overlaps found, else add event or update if isUpdate
+        let userresponse : boolean = true ;
+        if( eventOverlaps.length > 0 ){
+          let dialogRef = this.promptDialog.open( PromptDialogComponent, {width: '50vw', data: eventOverlaps})
+          dialogRef.afterClosed().subscribe( (saveEvent : boolean) =>{
+            if( !saveEvent) this.displayMessage('Cancelling Update!')
+            else if(  !isUpdate && saveEvent )
+              this.writeEvent(newEvent)
+            else if ( isUpdate  && saveEvent)
+              this.updateEvent(newEvent)
+          })//end of dialog subscribe
+        }
+        else if ( !isUpdate && userresponse )
+          this.writeEvent(newEvent)
+        else if ( isUpdate && userresponse )
+            this.updateEvent(newEvent)
+
+        else{
+          this.displayMessage('Cancelling')
+          
+        }
+  }
+
+  async handleEventDrop(eventInfo: any ){
+    //console.log(eventInfo)
+
+    
+    let event = eventInfo.event
+
+    console.log("Darg & Drop Event",event)
+    let newEvent :any = {
+      id : (event.id ? event.id : ''),
+      title: event.title, 
+      start: this.getDateStringFormat(event.startStr) ,  //startStr is in the format "2022-02-19" && start is the date object
+      end: this.getDateStringFormat(event.endStr),   //endStr is in the format "2022-02-19" && end is the date object
+      allDay: event.allDay,
+      backgroundColor: event.backgroundColor,
+      overlap: event.overlap,
+      displayEventTime: true,
+      editable: true,
+      extendedProps: event.extendedProps
+    }
+
+    await this.editEvents( newEvent , true); //update = true
+
+  }
 
 }
   

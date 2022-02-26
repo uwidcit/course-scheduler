@@ -1,39 +1,96 @@
-<div fxFlex >
-  <h1 mat-dialog-title>New Event</h1>
+<div id="modal_main" >
+  <div mat-dialog-title id="header">
+    <h1 mat-dialog-title *ngIf="!data.update" >New Event</h1>
+    <h1 mat-dialog-title *ngIf="data.update" >Updating "{{data.title}}" Event</h1>
+    <div class="spacer" ></div>
+    <button mat-button (click)="onNoClick()"><mat-icon>close</mat-icon></button>
+  </div>
+  
   <div mat-dialog-content>
   <p>
-    <mat-label>Event Title</mat-label>
-    <input  matInput type="text" [(ngModel)]="eventData.title" cdkFocusInitial>
-    <button *ngIf="eventData.title" matSuffix mat-icon-button aria-label="Clear" (click)="eventData.title=''">
-      <mat-icon>close</mat-icon>
-    </button>
-  </p>
-  <p>
-    <mat-label>Start Date</mat-label>
-    <input #startD matInput type="datetime-local" [(ngModel)]="eventData.start">
+    <mat-form-field appearance="outline" fxFlex="35">
+      <mat-label>Event Title</mat-label>
+      <input placeholder="Event Title" matInput type="text" [(ngModel)]="eventData.title" cdkFocusInitial>
+      <button *ngIf="eventData.title" matSuffix mat-icon-button aria-label="Clear" (click)="eventData.title=''">
+        <mat-icon>close</mat-icon>
+      </button>
+      
+      <mat-hint>E.g COMP1600 A1</mat-hint>
+    </mat-form-field>
     
-  </p>
-  <p>
-    <mat-label>End Date</mat-label>
-    <input #endD matInput type="datetime-local" [(ngModel)]="eventData.end" >
     
   </p>
 
-  <p>
-    <mat-label>All Day</mat-label>
-    <mat-checkbox color="warn" [(ngModel)]="eventData.allDay" class="text-megna">
-      
-    </mat-checkbox>
-  </p>
-  <p>
-    <mat-label>Color</mat-label>
-    <input #color matInput type="color" [(ngModel)]="eventData.backgroundColor" >
+  <p flexLayout="row">
+    <mat-form-field appearance="outline" fxFlex="35">
+     <mat-label>Course </mat-label>
+      <!-- <input matInput [(ngModel)]="course" > -->
+      <mat-select [(ngModel)]="course" >
+        <mat-option *ngFor="let course of data.courseList" [value]="course">
+          {{course}}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+   
+   <mat-form-field appearance="outline" fxFlexOffset="5" fxFlex="35">
+     <mat-label>Event Type </mat-label>
+    <!-- <input matInput [(ngModel)]="eventType" > -->
+    <mat-select [(ngModel)]="eventType" >
+      <mat-option value="Assignment" >
+        Assignment
+      </mat-option>
+      <mat-option value="Exam">
+        Exam
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+   
+ </p>
+
+  <p flexLayout="row">
+     <mat-form-field appearance="outline" fxFlex="35">
+      <mat-label>Start Date</mat-label>
+      <input #startD matInput type="datetime-local" [(ngModel)]="eventData.start">
+    </mat-form-field>
+    
+    <mat-form-field appearance="outline" fxFlexOffset="5" fxFlex="35">
+      <mat-label>End Date</mat-label>
+      <input #endD matInput type="datetime-local" [(ngModel)]="eventData.end" >
+    </mat-form-field>
     
   </p>
+
+  <div flexLayout="row">
+    
+    <section fxFlex="35" hidden>
+      <mat-checkbox color="warn" [(ngModel)]="eventData.allDay" class="text-megna">
+      All Day
+    </mat-checkbox>
+    </section>
+     
+    
+   
+   
+   <section appearance="fill" fxFlex="35">
+     <mat-label>Color</mat-label>
+      <input #color matInput type="color" [(ngModel)]="eventData.backgroundColor" >
+   </section>
+   
+  </div>
+  
+  <p>
+    <mat-form-field appearance="outline" fxFlex="75">
+      <mat-label>Details </mat-label>
+      <textarea  matInput [(ngModel)]="details" > </textarea>
+    </mat-form-field>
+    
+  </p>
+  
+  </div>
   <div mat-dialog-actions>
     
     <button mat-button (click)="onSave()">Save</button>
-    <button mat-button (click)="onNoClick()">Cancel</button>
-  </div>
+    <div class="spacer" ></div>
+    <button mat-button *ngIf="data.update" (click)="onDelete()">Delete</button>
   </div>
 </div>

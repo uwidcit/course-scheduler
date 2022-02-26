@@ -30,9 +30,20 @@ import { PerfectScrollbarConfigInterface } from 'ngx-perfect-scrollbar';
 
 import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
+import { FirebaseDBServiceService } from './services/firebase-dbservice.service';
+import { PromptDialogComponent } from './layouts/prompt-dialog/prompt-dialog.component';
 
+import { initializeApp,provideFirebaseApp } from '@angular/fire/app';
+import { provideAuth,getAuth } from '@angular/fire/auth';
+import { environment } from 'src/environments/environment';
 
+import { HotToastModule } from '@ngneat/hot-toast';
+import { LoginComponent } from './layouts/login/login.component';
+import { ReactiveFormsModule } from '@angular/forms';
+import { ProgrammeComponent } from './layouts/programme/programme.component';
 
+import { Ng2SearchPipeModule } from 'ng2-search-filter';
+import { ProgrammeModalComponent } from './layouts/programme-modal/programme-modal.component';
 export function HttpLoaderFactory(http: HttpClient) {
   return new TranslateHttpLoader(http, './assets/i18n/', '.json');
 }
@@ -53,7 +64,11 @@ const DEFAULT_PERFECT_SCROLLBAR_CONFIG: PerfectScrollbarConfigInterface = {
     VerticalAppSidebarComponent,
     AppBreadcrumbComponent,
     HorizontalAppHeaderComponent,
-    HorizontalAppSidebarComponent
+    HorizontalAppSidebarComponent,
+    PromptDialogComponent,
+    LoginComponent,
+    ProgrammeComponent,
+    ProgrammeModalComponent,
   ],
   imports: [
     BrowserModule,
@@ -73,13 +88,19 @@ const DEFAULT_PERFECT_SCROLLBAR_CONFIG: PerfectScrollbarConfigInterface = {
         useFactory: HttpLoaderFactory,
         deps: [HttpClient]
       }
-    })
+    }),
+    provideFirebaseApp(() => initializeApp(environment.firebase)),
+    provideAuth(() => getAuth()),
+    HotToastModule.forRoot(),
+    ReactiveFormsModule,
+    Ng2SearchPipeModule
   ],
   providers: [
     {
       provide: PERFECT_SCROLLBAR_CONFIG,
       useValue: DEFAULT_PERFECT_SCROLLBAR_CONFIG
-    }
+    },
+    FirebaseDBServiceService
   ],
   bootstrap: [AppComponent]
 })

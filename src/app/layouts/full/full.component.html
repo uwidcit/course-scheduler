@@ -100,21 +100,22 @@
             <mat-sidenav #snav id="snav" class="pl-xs" mode="over" fixedTopGap="0"
                 [opened]="false" [disableClose]="mobileQuery.matches" (open)="sidebarOpened = true"
                 (close)="sidebarOpened = true">
-                <mat-nav-list >
+                <mat-nav-list  >
                     <h3 mat-subheader class="text-uppercase font-weight-bold">Menu</h3>
-                    <mat-list-item>
-                        <mat-card>Dashboard</mat-card>
-                    </mat-list-item>
-                    <mat-list-item>
-                        <mat-card>Courses </mat-card>
-                    </mat-list-item>
-                    <mat-list-item>
-                        <mat-card>
-                            <span>Notifications </span> 
+                   <a routerLink="/views/calendar">  <mat-list-item>
+                        <mat-card>Calendar</mat-card> 
+                    </mat-list-item></a>
+                    <a routerLink="/views/programmes"> <mat-list-item  >
+                        <mat-card >Programmes </mat-card>
+                    </mat-list-item> </a>
+                     <a routerLink="/views/courses"> <mat-list-item>
+                       <mat-card>
+                            Courses
+                            <!-- <span>Courses </span> 
                             <span fxFlex></span>
-                            <span class="label label-red"> 10</span>
+                            <span class="label label-red"> 10</span> -->
                         </mat-card>
-                    </mat-list-item>
+                    </mat-list-item></a>
                     
                 
                 </mat-nav-list>

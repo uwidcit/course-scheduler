@@ -1,6 +1,6 @@
 export const eventList=  [
-        { "title": "event 1", "date": "2022-01-30", "displayEventTime": true },
-        { "title": "event 2", "date": "2022-02-02" , "editable": true, "overlap": true, backgroundColor : "red", interactive: true},
+        { "title": "Assignment 1", "start": "2022-01-30T00:00:00", "end": "2022-01-30T10:00:00", "displayEventTime": true },
+        { "title": "Assignment 2", "start": "2022-02-02T00:00:00" , "end": "2022-02-02T10:00:00" , "editable": true, "overlap": true, backgroundColor : "#f4d6a9", interactive: true},
         {
             "title": "Test Json",
             
@@ -12,8 +12,10 @@ export const eventList=  [
             "displayEventTime": true,
             "editable": true,
             "extendedProps": {
-            "department": "BioChemistry",
-            "eventType": "Assignment"
+            "course": "COMP1601",
+            "eventType": "Assignment",
+            "details": "",
+            "createdBy" : "test@gmail.com"
             }
         }
     ] 
