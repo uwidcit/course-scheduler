@@ -1,6 +1,7 @@
 <div class="container">
     <!-- TO display degree List -->
     <div class="side" >
+        
         <div *ngIf="degrees.length > 0 then list; else noList"> </div>
     </div>
     
@@ -8,10 +9,12 @@
     <main >
         <mat-toolbar> 
             <div class="spacer"></div>
-            <mat-icon aria-hidden="false" aria-label="add icon">add</mat-icon>
-            <mat-icon > search</mat-icon>
+            <mat-icon matSuffix aria-hidden="false" aria-label="add icon" (click)="openDialog(false)">add</mat-icon>
+            
         </mat-toolbar>
-         <div *ngIf="selected!='' then selected; else notSelected;"></div>
+         <div *ngIf="selected && currDegree!=null then selected; else notSelected;"></div>
+
+        
     </main>
 
 </div>
@@ -20,8 +23,13 @@
 
 
 <ng-template #list>
+    <mat-toolbar>
+        <input  matInput type="text" placeholder="Seach Degree" id="searchBar" [(ngModel)]="filterTerm" /> 
+        
+        <mat-icon > search</mat-icon>
+    </mat-toolbar>
     <mat-selection-list #degreeList [multiple]="false" [value]="selected">
-        <mat-list-option *ngFor="let degree of degrees" [value]="degree.name">
+        <mat-list-option *ngFor="let degree of degrees | filter: filterTerm; index as i" [value]="degree.name" (click)="selectDegree( i)">
             {{degree.name}}
         </mat-list-option>
     </mat-selection-list>
@@ -32,22 +40,45 @@
 </ng-template>
 
 <ng-template #selected>
-    <table matSort (matSortChange)="sortData($event)">
+    
+     <h2 id="degreeName" class="spacer"> {{currDegree.name}} </h2> 
+    
+    
+    <table >
         <tr>
-          <th mat-sort-header="code">Course Code</th>
-          <th mat-sort-header="name">Name</th>
-          <th mat-sort-header="type">Type</th>
-          <th mat-sort-header="year">Year</th>
-          <th mat-sort-header="semester">Semester</th>
+            <th >Course List</th>
+            <th colspan="2"> </th>
+            <th colspan="2"> <mat-icon (click)="openDialog( true )" matSuffix>mode_edit</mat-icon> <mat-icon (click)="deleteCourse()" style="margin-left: 5px;" matSuffix>delete</mat-icon></th>
+            <!-- <th class="icons">
+                
+            </th> -->
         </tr>
-      
-        <tr *ngFor="let degree of degrees">
-          <td>{{degree.name}}</td>
-          <td>{{degree.calories}}</td>
-          <td>{{degree.fat}}</td>
-          <td>{{degree.carbs}}</td>
-          <td>{{degree.protein}}</td>
+        <tr>
+          <!-- <th> </th> -->
+          <th >Course Code</th>
+          <!-- <th mat-sort-header="name">Name</th> -->
+          <th >Type</th>
+          <th >Year / Semester</th>
+          <!-- <th> Semester</th> -->
         </tr>
+        
+        <tr *ngFor="let course of currDegree.courses">
+          <!-- <td class="icons">
+              <mat-icon>mode_edit</mat-icon>
+          </td> -->
+
+          <td>{{course.courseName}}</td>
+          <td>{{course.type}}</td>
+          <td>
+              <p *ngFor="let period of course.offeredIn">{{period.year}} / {{period.semester}}</p>
+          </td>
+          <!-- <td>{{degree.carbs}}</td> -->
+          <!-- <td> 
+             <span *ngFor="let period2 of course.offeredIn"> {{period2.semester}} </span>  
+          </td> -->
+
+        </tr>
+
       </table>
 </ng-template>
 <ng-template #notSelected>

@@ -48,5 +48,11 @@ export class FirebaseDBServiceService {
 
     remove(tableRef)
   }
+
+  deleteProgramme( programmeId: string){
+    const tableRef = ref( this.dbRef, `coursesPerProgramme/${programmeId}`)
+
+    remove(tableRef)
+  }
   
 }
