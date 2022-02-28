@@ -50,7 +50,44 @@
 
                 <!-- ============================================================== -->
                 <!-- Profile - style you can find in header.scss -->
+                <!--  -->
                 <!-- ============================================================== -->
+                <ng-template #unreadIcon>
+                    <mat-icon>notifications_active</mat-icon>
+                </ng-template>
+                <ng-template #readIcon>
+                    <mat-icon>notifications_none</mat-icon>
+                </ng-template>
+
+                <ng-template #allNotifications>
+                    <mat-nav-list id="notice-list">
+                        <mat-list-item class="notice-wrapper" *ngFor="let notice of notifications">
+                            <div>
+                                <p class="date"> <mat-icon class="notice-icon" *ngIf="!notice.read">brightness_1</mat-icon> {{notice.date}}</p>
+                                <p class="notice"> {{notice.eventName}} clashes detected!</p>
+                            </div>
+                        </mat-list-item>
+                        
+                        <mat-list-item class="center-text" (click)="clearAllNotifications()">
+                           Clear All 
+                        </mat-list-item>
+                    </mat-nav-list>
+                </ng-template>
+                
+                <ng-template #noNotifications>
+                    <mat-nav-list id="notice-list">
+                       <div style="padding:15px" fxFill> No Notifications found </div> 
+                    </mat-nav-list>
+                    
+                </ng-template>
+                <button mat-icon-button [matMenuTriggerFor]="notifications_list" class="m-r-5"> <mat-icon *ngIf="unreadNotifications then unreadIcon; else readIcon">notifications</mat-icon></button>
+                <mat-menu #notifications_list="matMenu">
+                    <mat-nav-list *ngIf="notifications.length > 0 then allNotifications; else noNotifications">
+                        
+                    </mat-nav-list>
+                    
+                </mat-menu>
+
                 <button [matMenuTriggerFor]="profile" mat-icon-button class="m-r-5">
                     <mat-icon id="account_icon" >account_circle</mat-icon> </button>
                 <mat-menu #profile="matMenu" class="mymegamenu">
@@ -63,7 +100,7 @@
                     <button mat-menu-item>
                         <mat-icon>notifications_off</mat-icon> Disable notifications
                     </button>
-                    <button mat-menu-item>
+                    <button mat-menu-item (click)="signOut()" >
                         <mat-icon>exit_to_app</mat-icon> Sign Out
                     </button>
                 </mat-menu>

@@ -7,8 +7,10 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { FirebaseDBServiceService } from 'src/app/services/firebase-dbservice.service';
 import {  child, onValue, push, ref, set } from "firebase/database";
 import { PromptDialogComponent } from '../prompt-dialog/prompt-dialog.component';
+import { AuthenticationService } from 'src/app/services/authentication.service';
 
 export interface DialogData {
+  createdBy: string;
   //date : Date; 
   //dateStr :string;
   id: string;
@@ -54,6 +56,7 @@ export interface Course{
 })
 export class CalendarComponent implements OnInit {
 
+  currentUserId: string = ''
   courses: any; //JSON OBject of courses
 
   @ViewChild('calendar')
@@ -71,7 +74,7 @@ export class CalendarComponent implements OnInit {
 
   //localEvents = eventList    
   localEvents : JSON[] = [] ;        
-  constructor(private dialog: MatDialog, private promptDialog: MatDialog, private snackBar : MatSnackBar, private firebase: FirebaseDBServiceService ) { 
+  constructor(private dialog: MatDialog, private promptDialog: MatDialog, private snackBar : MatSnackBar, private firebase: FirebaseDBServiceService, private auth: AuthenticationService ) { 
     
     //Get Firebase data
     const tablesRef = ref(this.firebase.dbRef);
@@ -85,6 +88,10 @@ export class CalendarComponent implements OnInit {
       console.log(data.events)
       Object.entries(data.events).forEach( (entry: any)=>{
         const [key, value] = entry;
+        if( value.extendedProps.createdBy == this.currentUserId )
+          value.editable = true
+        else 
+          value.editable = false
         this.localEvents.push(value)
       })
       
@@ -128,11 +135,17 @@ export class CalendarComponent implements OnInit {
   } //end of constructor
 
   ngOnInit(): void {
-
+    if (this.auth.loggedIn){
+      this.currentUserId = this.auth.currentUser?.uid || ''
+       
+    }
     
   }
 
   openDialog( arg : any): void {   // Type: { start :String, end :String, allDay:boolean, title:String, backgroundColor: String, extendedProps: {} }
+    
+    
+
     const dialogRef = this.dialog.open(CalendarModal, {
       width: '80vw',
       data: arg,
@@ -206,6 +219,7 @@ export class CalendarComponent implements OnInit {
       end:  correctDateFormat ,
       allDay: arg.allDay,
       courseList : courseNames,
+      createdBy : this.currentUserId,
       update: false  //if it's a new event
     }
     this.openDialog( data ) 
@@ -468,6 +482,13 @@ export class CalendarComponent implements OnInit {
               this.writeEvent(newEvent)
             else if ( isUpdate  && saveEvent)
               this.updateEvent(newEvent)
+            
+            //create notification if overlap 
+            if(saveEvent && eventOverlaps.length > 1){
+              let message = ''
+              eventOverlaps.forEach( event => message+= `${event.title} (${event.type})`)
+              this.firebase.createNotification(this.currentUserId, newEvent.title, message)
+            } 
           })//end of dialog subscribe
         }
         else if ( !isUpdate && userresponse )

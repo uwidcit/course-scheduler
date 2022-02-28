@@ -77,7 +77,7 @@ export class CalendarModal implements OnInit {
     this.course = this.data.extendedProps ? this.data.extendedProps.course : '';
     this.eventType = this.data.extendedProps ? this.data.extendedProps.eventType  : 'Assignment';
     this.details = this.data.extendedProps ? this.data.extendedProps.details  : '';
-    this.createdBy = this.data.extendedProps ? this.data.extendedProps.createdBy  : '';
+    this.createdBy = this.data.extendedProps ? this.data.extendedProps.createdBy  : this.data.createdBy;
 
     this.eventData = {
       id : this.data.id || '',
@@ -86,7 +86,7 @@ export class CalendarModal implements OnInit {
       end: `${this.data.end}`,
       allDay: this.data.allDay,
       displayEventTime:  true ,
-      editable: true,
+      editable: false,
       overlap: true,
       //allow: Identity<AllowFunc>;
       //className: typeof parseClassNames;

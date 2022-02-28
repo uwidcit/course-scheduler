@@ -5,7 +5,7 @@ import {canActivate, redirectUnauthorizedTo, redirectLoggedInTo} from '@angular/
 import { LoginComponent } from './layouts/login/login.component';
 
 const redirectToLogin = () => redirectUnauthorizedTo(['login']);
-const redirectToHome = () => redirectLoggedInTo(['home']);
+const redirectToHome = () => redirectLoggedInTo(['views']);
 
 export const AppRoutes: Routes = [
     {
@@ -14,13 +14,13 @@ export const AppRoutes: Routes = [
         children: [
             {
                 path: '',
-                redirectTo: '/views/calendar',
+                redirectTo: '/login', //'/views/calendar',
                 pathMatch: 'full'
             },
             {
                 path: 'views',
                 loadChildren: () => import('./starter/starter.module').then(m => m.StarterModule),
-                //...canActivate(redirectToLogin)
+                ...canActivate(redirectToLogin)
             }
             
         ]

@@ -64,7 +64,9 @@ import { ProgrammeModalComponent } from '../programme-modal/programme-modal.comp
 
       #searchBar{
         border: 3px solid #ccc;
-        flex: 0.9 0 auto;
+        flex: 95% 0 auto;
+        width: 100%;
+        /* flex: 0.9 0 auto; */
       }
       
       input[type=text]:focus {
@@ -73,7 +75,7 @@ import { ProgrammeModalComponent } from '../programme-modal/programme-modal.comp
 
       .none{
         text-align: center;
-        margin-top: 50%;
+        margin-top: 40vh;
       }
       table{
         width: 100%;
@@ -186,9 +188,14 @@ export class ProgrammeComponent implements OnInit {
   }
 
   openDialog(update: boolean){
-    //
+    //only pass current degree if it's an update
+    let data;
+    if( update)
+      data= { update: update, degree: this.currDegree}
+    else
+      data = { update: update}
     let dialog = this.dialogRef.open(ProgrammeModalComponent, {
-      data: { update: update, degree: this.currDegree},
+      data: data,
       width: '96vw',
       height: '90vh'
     });
