@@ -48,8 +48,13 @@ import { onValue, ref } from 'firebase/database';
 					
 				}
 
+				mat-menu{
+					padding-bottom: 0 !important;
+				}
+
 				#notice-list{
-					height: clamp( 25vh, 15vh, 15vh);
+					 height: 15.4vh; /*clamp( 25vh, 15vh, 15vh); */
+					 overflow-y: auto;
 				}
 				
 				.notice{
@@ -69,7 +74,8 @@ import { onValue, ref } from 'firebase/database';
 				.center-text{
 					padding: 0 25% !important;
 					background: #1E88E5;
-					bottom: -15.4vh;
+					color: #fff;
+					/* bottom: -15.4vh; */
 					font-size: 14px;
 					height: 25px !important;
 				}
@@ -175,8 +181,14 @@ export class FullComponent implements OnDestroy {
 		this.router.navigate(['login']);  //redirect user to login
 	}
 
+	readAll(){
+		this.firebase.readAllNotifications(this.currentUser)
+		this.router.navigate(['views/calendar'])
+	}
+
 	clearAllNotifications(){
 		this.firebase.deleteUserNotifications(this.currentUser)
+		this.router.navigate(['views/calendar'])
 	}	
 
 }

@@ -8,13 +8,17 @@ import { AuthenticationService } from 'src/app/services/authentication.service';
   selector: 'app-login',
   templateUrl: './login.component.html',
   styles: [`
+        *{
+          background: #fff;
+        }
+        .wrapper{ width: 100vw; height: 100vh; display: flex; justify-content: center; align-content: center;}
         .loginContainer{
           margin: 20vh 25vw;
           display: flex;
           flex-direction: column;
           justify-content: center;
           padding: 10px;
-          background: #fff;
+          background: #fff !important;
           overflow: hidden;
         }
         #account-icon{

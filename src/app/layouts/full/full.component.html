@@ -6,7 +6,7 @@
         <!-- ============================================================== -->
         <!-- Topbar - style you can find in header.scss -->
         <!-- ============================================================== -->
-        <mat-toolbar color="primary" class="topbar relative">
+        <mat-toolbar id="main-nav-bar" class="topbar relative">
             <div class="w-100 fix-width-for-horizontal">
                 
                 <!-- ============================================================== -->
@@ -23,7 +23,7 @@
                 <!-- Logo - style you can find in header.scss -->
                 <!-- ============================================================== -->
                 
-                <a class="navbar-brand" fxFlexAlign="center" href="/">
+                <a id="app-title" class="navbar-brand" fxFlexAlign="center" href="/">
                         <!-- Logo text -->
                         <span> SCHEDULER</span>
                         
@@ -53,7 +53,7 @@
                 <!--  -->
                 <!-- ============================================================== -->
                 <ng-template #unreadIcon>
-                    <mat-icon>notifications_active</mat-icon>
+                    <mat-icon style=" color: red;" (click)="readAll()">notifications_active</mat-icon>
                 </ng-template>
                 <ng-template #readIcon>
                     <mat-icon>notifications_none</mat-icon>
@@ -76,7 +76,7 @@
                 
                 <ng-template #noNotifications>
                     <mat-nav-list id="notice-list">
-                       <div style="padding:15px" fxFill> No Notifications found </div> 
+                       <div style="padding:15px;" fxFill> No Notifications found </div> 
                     </mat-nav-list>
                     
                 </ng-template>

@@ -1,15 +1,43 @@
 
 
-// .fc-button-primary{
-//     background-color: blue !important;
-// }
+    $--fc-border-color: #C1D0ED;
+    $--fc-today-bg-color: #f8f5c5 ;
+    // $--fc-page-bg-color: #C1D0ED ;
+    $--header-background: #7F7F7F;
+
+    $--primary-calendar-color: #60BBEE;// #C1D0ED ; //#2fa4e7
+    $--secondary-calendar-color: #2fa4e7 ;//#60BBEE;
+
+  #app-title{
+      color: #fff;
+  }
+#main-nav-bar{
+    background-color: $--primary-calendar-color;
+}
+
 .fc-button-primary {
     color: #fff !important;
-    background-color: #2fa4e7 !important;
-    border-color: #2fa4e7 !important;
+    background-color: $--secondary-calendar-color !important;
+    border-color: $--secondary-calendar-color !important;
 }
 
 .fc-toolbar-title{
-    color: #2fa4e7;
+    color: $--secondary-calendar-color;
+}
+
+.fc-col-header-cell, .fc-timegrid-axis{
+    background: $--header-background;
+}
+
+.fc-list-day th {
+    background-color: $--primary-calendar-color !important;
+}
+
+.fc-daygrid-day:not(.fc-day-today), .fc-timeGridWeek-view, .fc-timeGridDay-view  {
+    background: $--primary-calendar-color;
+}
+
+.fc-day-today{
+    background-color: $--fc-today-bg-color !important;
 }
 

@@ -79,7 +79,7 @@ export class FirebaseDBServiceService {
     set( tableRef, result)
   }
 
-  readAllNotifications(userID: string, eventName: string, message : string, ){
+  readAllNotifications(userID: string ){
     // User { {email, message, date, read}, {}}
     let path = 'users/' + userID + '/notifications'
     const tableRef = ref(this.dbRef, path )
