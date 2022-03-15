@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 
 import { initializeApp } from 'firebase/app';
 import { getAnalytics } from "firebase/analytics";
-import { getDatabase, onValue, ref, remove } from "firebase/database";
+import { DatabaseReference, getDatabase, onValue, ref, remove, set } from "firebase/database";
 import { environment } from 'src/environments/environment';
 
 @Injectable({
@@ -54,5 +54,59 @@ export class FirebaseDBServiceService {
 
     remove(tableRef)
   }
+
+
+  getUserNotifications(tableRef: DatabaseReference){
+    let result ;
+    onValue(tableRef, (snapshot) => {
+      result = snapshot.val();
+      
+    });
+    return result
+  }
+
+  createNotification(userID: string, eventName: string, message : string, ){
+    // User { {email, message, date, read}, {}}
+    let path = 'users/' + userID + '/notifications'
+    const tableRef = ref(this.dbRef, path )
+    //Get array of notifications
+    let result:any = this.getUserNotifications(tableRef)
+
+    if( !result )
+      result = []
+    result.push({eventName: eventName, message: message, date: new Date().toLocaleDateString(), read: false })
+
+    set( tableRef, result)
+  }
+
+  readAllNotifications(userID: string ){
+    // User { {email, message, date, read}, {}}
+    let path = 'users/' + userID + '/notifications'
+    const tableRef = ref(this.dbRef, path )
+    //Get array of notifications
+    let result:any = this.getUserNotifications(tableRef)
+
+    if( result ){
+      result.forEach( (notification: { read: boolean; }) => notification.read = true)
+      set( tableRef, result)
+    }
+    
+  }
   
+  deleteUserNotifications( userId: string){
+    const tableRef = ref( this.dbRef, `users/${userId}/notifications`)
+
+    remove(tableRef)
+  }
+
+  sendEmail(eventName: string,message: string, recipient: string){
+    let request = {
+      // name: "",
+      recipient: 'jeremiahstrong321@gmail.com', //recipient,
+      subject: "Clash Notification for '" + eventName +"'",
+      message: message
+    }
+    let url = "node-email-server1.herokuapp.com/send_email"
+    this.http.post( url, request)
+  }
 }

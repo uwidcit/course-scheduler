@@ -7,8 +7,10 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { FirebaseDBServiceService } from 'src/app/services/firebase-dbservice.service';
 import {  child, onValue, push, ref, set } from "firebase/database";
 import { PromptDialogComponent } from '../prompt-dialog/prompt-dialog.component';
+import { AuthenticationService } from 'src/app/services/authentication.service';
 
 export interface DialogData {
+  createdBy: string;
   //date : Date; 
   //dateStr :string;
   id: string;
@@ -38,9 +40,32 @@ export interface Course{
         overflow-y: none;
         padding: 5px;
       }
-      full-calendar{
-        max-height: 88vh;
+      header{
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-end;
+        max-height: 7vh;
       }
+
+      #title{
+        flex: 1 0 auto; 
+      }
+
+      .core{
+        color: rgb(0, 250, 4);
+        margin-right: 7px;
+      }
+
+      .elective{
+        color: rgb(250, 0 , 4);
+        margin-right: 7px;
+      }
+
+      .keys{
+        margin-right: 20px;
+        font-weight: 700;
+      }
+      
       
       .calendar_modal{
         background: rgba( 248, 248, 248, 0.5 ) !important;
@@ -53,7 +78,10 @@ export interface Course{
   `]
 })
 export class CalendarComponent implements OnInit {
+  coreCourses: string[] = []  // from list of degrees
+  degrees: {[key:string]: {[key:string]: any}} = {}
 
+  currentUserId: string = ''
   courses: any; //JSON OBject of courses
 
   @ViewChild('calendar')
@@ -71,7 +99,7 @@ export class CalendarComponent implements OnInit {
 
   //localEvents = eventList    
   localEvents : JSON[] = [] ;        
-  constructor(private dialog: MatDialog, private promptDialog: MatDialog, private snackBar : MatSnackBar, private firebase: FirebaseDBServiceService ) { 
+  constructor(private dialog: MatDialog, private promptDialog: MatDialog, private snackBar : MatSnackBar, private firebase: FirebaseDBServiceService, private auth: AuthenticationService ) { 
     
     //Get Firebase data
     const tablesRef = ref(this.firebase.dbRef);
@@ -85,10 +113,29 @@ export class CalendarComponent implements OnInit {
       console.log(data.events)
       Object.entries(data.events).forEach( (entry: any)=>{
         const [key, value] = entry;
+        if( value.extendedProps.createdBy == this.currentUserId )
+          value.editable = true
+        else 
+          value.editable = false
         this.localEvents.push(value)
       })
       
-      
+
+      if (!data.coursesPerProgramme) return
+      this.degrees = data.coursesPerProgramme
+
+      //get json of degrees & iterate as list
+      Object.entries(data.coursesPerProgramme).forEach( (degree: any)=>{
+        const [degreeName, degreeCourses] = degree
+        
+        if( !degreeCourses ) return
+        // get json of courses per degree 
+        Object.entries(degreeCourses).forEach( (course: any) =>{
+          const [name, data] = course 
+          if( data.type =='core' && this.coreCourses.includes(name)==false )
+            this.coreCourses.push(name)
+        })
+      })
       
       //this.localEvents = data.events
     });
@@ -98,7 +145,7 @@ export class CalendarComponent implements OnInit {
     //define Calendar Options
     this.calendarOptions = {
       initialView: 'dayGridMonth',
-      height: "auto",
+      height: "84vh",
       eventChange: function ( arg){ console.log('Changed ',arg.event)},
       eventClick: this.handleEventClick.bind(this),
       //eventMouseEnter: this.handleEventHover.bind(this),
@@ -128,11 +175,17 @@ export class CalendarComponent implements OnInit {
   } //end of constructor
 
   ngOnInit(): void {
-
+    if (this.auth.loggedIn){
+      this.currentUserId = this.auth.currentUser?.uid || ''
+       
+    }
     
   }
 
   openDialog( arg : any): void {   // Type: { start :String, end :String, allDay:boolean, title:String, backgroundColor: String, extendedProps: {} }
+    
+    
+
     const dialogRef = this.dialog.open(CalendarModal, {
       width: '80vw',
       data: arg,
@@ -155,7 +208,7 @@ export class CalendarComponent implements OnInit {
           start: result.start,
           end: result.end,
           allDay: result.allDay,
-          backgroundColor: result.backgroundColor,
+          backgroundColor: this.isCoreCourse(result.extendedProps.course) ? '#fa0004' : '#00fa04', //result.backgroundColor,
           overlap: result.overlap,
           displayEventTime: true,
           editable: true,
@@ -206,6 +259,7 @@ export class CalendarComponent implements OnInit {
       end:  correctDateFormat ,
       allDay: arg.allDay,
       courseList : courseNames,
+      createdBy : this.currentUserId,
       update: false  //if it's a new event
     }
     this.openDialog( data ) 
@@ -409,19 +463,22 @@ export class CalendarComponent implements OnInit {
     let overlaps: any = [];
     //Check for event overlap && courses are within same degree
     if ( newEvent.id != eventObj.id && this.checkForOverlap(newEvent, eventObj)  ){
-
+      console.log('New event in getOverlap: ', newEvent.extendedProps.course)
       degreeMatches  = this.checkDegree(newEvent.extendedProps.course, eventObj.extendedProps.course)//get 2 courses in degree
       
       if( degreeMatches.length == 0 ) return;
       let match = false;
       for( let degree of degreeMatches){
-        let course1:any = await this.firebase.getDegreeCourse(degree, newEvent.extendedProps.course)
-        let course2:any = await this.firebase.getDegreeCourse(degree, eventObj.extendedProps.course)
+        let course1:any = this.getDegreeCourse(degree, newEvent.extendedProps.course)//await this.firebase.getDegreeCourse(degree, newEvent.extendedProps.course)
+        let course2:any = this.getDegreeCourse(degree, eventObj.extendedProps.course)//await this.firebase.getDegreeCourse(degree, eventObj.extendedProps.course)
         
+        console.log('Fetched course1: ', course1)
+        console.log('Fetched course2: ', course2)
         if( !match && course1.type == "core" && course2.type == "core" && this.compareCoursePeriod(course1.offeredIn, course2.offeredIn) ){
           overlaps.push({ 
             title: eventObj.title,
-            type: course2.type 
+            type: course2.type,
+            createdBy: eventObj.extendedProps.createdBy 
           })
           match = true
         }
@@ -468,6 +525,15 @@ export class CalendarComponent implements OnInit {
               this.writeEvent(newEvent)
             else if ( isUpdate  && saveEvent)
               this.updateEvent(newEvent)
+            
+            //create notification if overlap 
+            if(saveEvent && eventOverlaps.length > 1){
+              let message = ''
+              eventOverlaps.forEach( event => message+= `${event.title} (${event.type})`)
+              this.firebase.createNotification(this.currentUserId, newEvent.title, message)
+              
+              //check if overlaps for event eventOverlapping exceeds 3
+            } 
           })//end of dialog subscribe
         }
         else if ( !isUpdate && userresponse )
@@ -503,6 +569,18 @@ export class CalendarComponent implements OnInit {
 
     await this.editEvents( newEvent , true); //update = true
 
+  }
+
+  isCoreCourse(course: string){
+    console.log( course,' is a core course: ', this.coreCourses.includes(course))
+    return this.coreCourses.includes(course)
+  }
+
+  getDegreeCourse(degree:string, course:string){
+    let c = this.degrees[`${degree}` ][`${course}`]
+    console.log('Recieved: ', degree, ' & ', course)
+    console.log('Requested: ', c)
+    return this.degrees[`${degree}` ][`${course}`]
   }
 
 }

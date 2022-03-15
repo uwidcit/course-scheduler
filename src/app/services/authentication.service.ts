@@ -44,4 +44,7 @@ export class AuthenticationService {
   logout(){
     return from(this.auth.signOut());
   }
+  // passwordReset(){
+  //   this.auth.
+  // }
 }

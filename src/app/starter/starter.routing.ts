@@ -6,7 +6,7 @@ import { StarterComponent } from './starter.component';
 export const StarterRoutes: Routes = [
     {
         path: '',
-        redirectTo: '/calendar',
+        redirectTo: '/views/calendar',
         pathMatch: 'full'
     },
     {
@@ -23,5 +23,10 @@ export const StarterRoutes: Routes = [
     {
         path: 'programmes',
         component: ProgrammeComponent
-    }
+    },
+    {
+        path: '**',
+        redirectTo: '/login',
+        pathMatch: 'full'
+    },
 ];
