@@ -98,4 +98,15 @@ export class FirebaseDBServiceService {
 
     remove(tableRef)
   }
+
+  sendEmail(eventName: string,message: string, recipient: string){
+    let request = {
+      // name: "",
+      recipient: 'jeremiahstrong321@gmail.com', //recipient,
+      subject: "Clash Notification for '" + eventName +"'",
+      message: message
+    }
+    let url = "node-email-server1.herokuapp.com/send_email"
+    this.http.post( url, request)
+  }
 }

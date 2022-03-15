@@ -12,11 +12,7 @@ export const AppRoutes: Routes = [
         path: '',
         component: FullComponent,
         children: [
-            {
-                path: '',
-                redirectTo: '/login', //'/views/calendar',
-                pathMatch: 'full'
-            },
+            
             {
                 path: 'views',
                 loadChildren: () => import('./starter/starter.module').then(m => m.StarterModule),
@@ -29,4 +25,9 @@ export const AppRoutes: Routes = [
         component: LoginComponent,
         //...canActivate(redirectToHome)
        },
+       {
+        path: '**',
+        redirectTo: '/views/calendar',
+        pathMatch: 'full'
+    },
 ];

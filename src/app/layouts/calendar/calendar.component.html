@@ -1,5 +1,11 @@
 
 <div class="wrapper">
+    <header>
+        <span id="title"></span>
+        <span class="keys"> <mat-icon class="core">circle</mat-icon>Elective Courses </span>
+        <span class="keys"> <mat-icon class="elective">circle</mat-icon>Core Courses </span>
+        
+    </header>
     <full-calendar #calendar deepChangeDetection="true" [options]="calendarOptions"></full-calendar>
     <!-- {{courses  |  json}} -->
 </div>

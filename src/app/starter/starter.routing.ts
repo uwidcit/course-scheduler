@@ -23,5 +23,10 @@ export const StarterRoutes: Routes = [
     {
         path: 'programmes',
         component: ProgrammeComponent
-    }
+    },
+    {
+        path: '**',
+        redirectTo: '/login',
+        pathMatch: 'full'
+    },
 ];
