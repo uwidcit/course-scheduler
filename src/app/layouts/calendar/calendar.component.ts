@@ -98,7 +98,7 @@ export class CalendarComponent implements OnInit {
                   }
 
   //localEvents = eventList    
-  localEvents : JSON[] = [] ;        
+  localEvents : any = [] ;        
   constructor(private dialog: MatDialog, private promptDialog: MatDialog, private snackBar : MatSnackBar, private firebase: FirebaseDBServiceService, private auth: AuthenticationService ) { 
     
     //Get Firebase data
@@ -581,6 +581,37 @@ export class CalendarComponent implements OnInit {
     console.log('Recieved: ', degree, ' & ', course)
     console.log('Requested: ', c)
     return this.degrees[`${degree}` ][`${course}`]
+  }
+
+  //check number of events <= 
+  validEventCount(course: string, courseType:string){
+    let exams = 0
+    let assignments = 0
+
+    let courseData = this.courses[`${course}`]
+
+    if( !courseData ) return false
+
+
+    for(let assessment of courseData){
+      if(assessment.type == 'exam')
+        exams++
+        else if(assessment.type == 'assignments')
+        assignments++
+    }
+      
+    for( let event of this.localEvents){
+      if( event.extendedProps.course == course && event.extendedProps.eventType=='exam')
+        exams--
+      else if( event.extendedProps.course == course && event.extendedProps.eventType=='assignement')
+        assignments--
+    }
+    
+    
+    if(  exams> 0 || assignments > 0 )
+      return true
+    
+    return false
   }
 
 }

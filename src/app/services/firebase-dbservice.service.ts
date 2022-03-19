@@ -42,6 +42,41 @@ export class FirebaseDBServiceService {
       return result
   }
 
+  async getCourseDegrees( courseName: string){
+    const tableRef = ref(this.dbRef, `courses/${courseName}/degrees`)
+
+    let result: string[] = [];
+    onValue(tableRef, (snapshot) => {
+      result = snapshot.val();
+      
+    });
+
+    if( !result ) result = [];
+    
+    return result
+  }
+
+  async updateCourseDegree(degreeName: string, course: string, isNewCourse: boolean){
+    let degreeArr = await this.getCourseDegrees(course)
+
+    if( degreeArr.length == 0 && isNewCourse==false ) return false; //if empty array found on Delete operation
+
+    if( isNewCourse )
+      degreeArr.push( degreeName)
+
+    else{
+        //find degree location & update array 
+      let degreeIndex = degreeArr.indexOf(degreeName)
+      if( degreeIndex == -1) return false
+      degreeArr.splice(degreeIndex, 1)
+    }
+    
+    //update array of degrees in Course json
+    let tableRef = ref(this.dbRef, `courses/${course}/degrees`)
+    set( tableRef, degreeArr)
+    return true
+  }
+
 
   deleteEvent( eventId: string){
     const tableRef = ref( this.dbRef, `events/${eventId}`)
