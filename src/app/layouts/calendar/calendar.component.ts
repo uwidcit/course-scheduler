@@ -8,6 +8,7 @@ import { FirebaseDBServiceService } from 'src/app/services/firebase-dbservice.se
 import {  child, onValue, push, ref, set } from "firebase/database";
 import { PromptDialogComponent } from '../prompt-dialog/prompt-dialog.component';
 import { AuthenticationService } from 'src/app/services/authentication.service';
+import { Router } from '@angular/router';
 
 export interface DialogData {
   createdBy: string;
@@ -78,6 +79,7 @@ export interface Course{
   `]
 })
 export class CalendarComponent implements OnInit {
+  semesterSchedule: any 
   coreCourses: string[] = []  // from list of degrees
   degrees: {[key:string]: {[key:string]: any}} = {}
 
@@ -99,16 +101,18 @@ export class CalendarComponent implements OnInit {
 
   //localEvents = eventList    
   localEvents : any = [] ;        
-  constructor(private dialog: MatDialog, private promptDialog: MatDialog, private snackBar : MatSnackBar, private firebase: FirebaseDBServiceService, private auth: AuthenticationService ) { 
+  constructor(private dialog: MatDialog, private promptDialog: MatDialog, private snackBar : MatSnackBar, private firebase: FirebaseDBServiceService, private auth: AuthenticationService,  private router: Router ) { 
     
     //Get Firebase data
     const tablesRef = ref(this.firebase.dbRef);
     onValue(tablesRef, (snapshot) => {
       this.localEvents.length = 0;
       const data = snapshot.val();
-      this.courses = data.courses;
+      
+      this.semesterSchedule = data.semesterSchedule  // get the semesterSchedule
       
       if ( !data.events || !data.courses  )return 
+      this.courses = data.courses;
 
       console.log(data.events)
       Object.entries(data.events).forEach( (entry: any)=>{
@@ -214,8 +218,9 @@ export class CalendarComponent implements OnInit {
           editable: true,
           extendedProps: result.extendedProps
         }
-
-        await this.editEvents( newEvent , result.update)
+        
+        if ( this.courseAssessmentWithinLimit( newEvent.extendedProps.course, newEvent.extendedProps.eventType)  && this.isInSemesterSchedule(newEvent.start , newEvent.end, newEvent.extendedProps.eventType ))
+          await this.editEvents( newEvent , result.update)
          //this.calendarOptions.eventSources?.push(result);//this.localEvents
       }
       else {
@@ -445,6 +450,8 @@ export class CalendarComponent implements OnInit {
       extendedProps: event.extendedProps
     }
 
+    if( !this.isInSemesterSchedule(newEvent.start , newEvent.end, newEvent.extendedProps.eventType ))
+      this.router.navigate(['/views'])
     await this.editEvents( newEvent , true); //update = true
 
   }
@@ -499,7 +506,7 @@ export class CalendarComponent implements OnInit {
   async editEvents(newEvent: { title: string; }, isUpdate: boolean ){
     this.displayMessage(`Checking for clahses with ${newEvent.title} ...`)
 
-        let eventOverlaps: {title: string, type: string}[] = [] //DialogData[] = []
+        let eventOverlaps: {title: string, type: string, createdBy:string}[] = [] //DialogData[] = []
         
 
         // this.localEvents.forEach( async(eventObj: any )=>{
@@ -530,8 +537,12 @@ export class CalendarComponent implements OnInit {
             if(saveEvent && eventOverlaps.length > 1){
               let message = ''
               eventOverlaps.forEach( event => message+= `${event.title} (${event.type})`)
-              this.firebase.createNotification(this.currentUserId, newEvent.title, message)
-              
+              this.firebase.createNotification(this.currentUserId, newEvent.title, message).subscribe( {
+                next: response => this.displayMessage(response),
+                error: errorMsg => this.displayMessage(errorMsg)
+              });
+
+              this.sendEmailsToOtherUsers(eventOverlaps)
               //check if overlaps for event eventOverlapping exceeds 3
             } 
           })//end of dialog subscribe
@@ -567,6 +578,8 @@ export class CalendarComponent implements OnInit {
       extendedProps: event.extendedProps
     }
 
+    if( !this.isInSemesterSchedule(newEvent.start , newEvent.end, newEvent.extendedProps.eventType ))
+      this.router.navigate(['/views'])
     await this.editEvents( newEvent , true); //update = true
 
   }
@@ -583,35 +596,80 @@ export class CalendarComponent implements OnInit {
     return this.degrees[`${degree}` ][`${course}`]
   }
 
-  //check number of events <= 
-  validEventCount(course: string, courseType:string){
-    let exams = 0
-    let assignments = 0
+  //check number of events <= the perdefined amt
+  courseAssessmentWithinLimit(course: string, assessmentType:string){
+    console.log("Running courseAssessmentWithinLimit for " + course)
+    let assessmentCount = 0
 
     let courseData = this.courses[`${course}`]
-
+    console.log( courseData)
     if( !courseData ) return false
 
 
-    for(let assessment of courseData){
-      if(assessment.type == 'exam')
-        exams++
-        else if(assessment.type == 'assignments')
-        assignments++
+    for(let assessment of courseData.assessments){
+      // console.log(assessment)
+      if(assessment.type.toLowerCase() == assessmentType.toLowerCase())
+        assessmentCount+=1
+        
+    }
+
+    if( assessmentCount == 0 ){
+      this.displayMessage( `The assessment type, "${assessmentType}", does not exist for ${course}.`)
+      return false
+    }
+    
+    for( let event of this.localEvents){
+      // console.log(event)
+      if( event.extendedProps.course == course && event.extendedProps.eventType.toLowerCase()== assessmentType.toLowerCase())
+        assessmentCount-=1
+    }
+    
+    // console.log( `Assessment Count ${assessmentCount}`)
+    if(  assessmentCount > 0 ){
+      //console.log("Returning true from courseAssessmentWithinLimit \n")
+      return true
     }
       
-    for( let event of this.localEvents){
-      if( event.extendedProps.course == course && event.extendedProps.eventType=='exam')
-        exams--
-      else if( event.extendedProps.course == course && event.extendedProps.eventType=='assignement')
-        assignments--
+    this.displayMessage( `The # of ${assessmentType} for ${course} has been scheduler`)
+    return false
+  }
+
+  async sendEmailsToOtherUsers(eventOverlaps:{title: string, type: string, createdBy:string}[]){
+    console.log(" Running sendEmailsToOtherUsers fn...")
+    for( let event of eventOverlaps){
+      let message = ""
+      for ( let otherEvents of eventOverlaps)
+        if (otherEvents.title != event.title)
+          message += `${otherEvents.title} (${otherEvents.type})\n`
+      this.firebase.sendEmail(event.title, message, event.createdBy ).subscribe( {
+                                                                                  next: response => this.displayMessage(response),
+                                                                                  error: errorMsg => this.displayMessage(errorMsg)
+                                                                                });
     }
+  }
+
+  isInSemesterSchedule(start:string, end: string, assessmentType:string ){
+    console.log(" Running isInSemesterSchedule fn...")
     
-    
-    if(  exams> 0 || assignments > 0 )
+    let event = { start: Date.parse(`${start}`), end: Date.parse(`${end}`) }
+    //Get either the teaching or exam period for comparison
+    let schedulingPeriod = assessmentType.toLowerCase() == "assignment" ? { start: Date.parse(`${this.semesterSchedule.teaching.start}`), end: Date.parse(`${this.semesterSchedule.teaching.end}`) }
+                                                          : { start: Date.parse(`${this.semesterSchedule.exam.start}`), end: Date.parse(`${this.semesterSchedule.exam.end}`) }
+
+    if( Date.now() >= schedulingPeriod.end && assessmentType.toLowerCase() =="assignment")
+      this.displayMessage("The period for scheduling Assignments has passed!\n Ask your admin to extend it! ")
+    else( Date.now() >= schedulingPeriod.end && assessmentType.toLowerCase() =="exam")
+      this.displayMessage("The period for scheduling Exams has passed!\n Ask your admin to extend it! ")
+
+    //between defined scheduling period: true
+    if ( event.start <= schedulingPeriod.end && event.end >= schedulingPeriod.start )
       return true
     
-    return false
+    if( assessmentType.toLowerCase() =="assignment" )
+      this.displayMessage("Invalid Date Range for assignment/course work")
+    else
+      this.displayMessage("Invalid Date Range for exams")
+      return false
   }
 
 }
