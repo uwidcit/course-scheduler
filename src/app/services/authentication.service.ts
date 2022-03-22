@@ -11,7 +11,7 @@ import { environment } from 'src/environments/environment';
   providedIn: 'root'
 })
 export class AuthenticationService {
-  //app = initializeApp(environment.firebaseConfig);
+  
     
   //currentUser$ = authState(this.auth);
   currentUser= this.auth.currentUser ;
@@ -31,11 +31,20 @@ export class AuthenticationService {
    }
 
   signUp(name: string, email: string, password: string){
-    return from(createUserWithEmailAndPassword(this.auth, email, password)).pipe(
-      switchMap(({user}) => updateProfile(user, {displayName: name}))
+    // return from(createUserWithEmailAndPassword(this.auth, email, password)).pipe(
+    //   switchMap(({user}) =>  updateProfile(user, {displayName: name}))
       
-    );
+    // );
+    
+     return createUserWithEmailAndPassword(this.auth, email, password)
+     //.then( (userCredentials)=>{
+    //   console.log(userCredentials.user.uid, userCredentials.user.email)
+    //   return userCredentials
+    // })
+    
   }
+
+  
 
   login(username: string, password: string){
     return from(signInWithEmailAndPassword(this.auth, username, password));

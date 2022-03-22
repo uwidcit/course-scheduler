@@ -1,4 +1,8 @@
-    $fc-border-color: #C1D0ED;
+ .mat-menu-content{
+    padding-bottom: 0px !important;
+ }
+ 
+ $fc-border-color: #C1D0ED;
     $fc-today-bg-color: #f8f5c5 ;
     // $fc-page-bg-color: #C1D0ED ;
     $header-background: #7F7F7F;
@@ -11,6 +15,7 @@
   }
 #main-nav-bar{
     background-color: $primary-calendar-color;
+    
 }
 
 .fc-button-primary {
@@ -46,10 +51,11 @@
     
 }
 
-.fc-event-title-container:hover{
-    font-size: medium;
-    font-weight: 600;
-}
+//Enlargen Event
+// .fc-event-title-container{
+//     font-size: medium;
+//     font-weight: 600;
+// }
 
 .fc-daygrid-event{
     border-radius: 10px !important;
@@ -59,3 +65,27 @@
 // .fc-daygrid-event:hover{
 //     border-width: 3px ;
 // }
+
+
+/* Scroll bar */
+      /* width */
+      *::-webkit-scrollbar {
+        width: 10px;
+      }
+
+      /* Track */
+      *::-webkit-scrollbar-track {
+        background: transparent;
+        filter: drop-shadow(0px 0px 15px $primary-calendar-color) !important;
+        box-shadow: 0px 5px 20px $primary-calendar-color;
+      }
+
+      /* Handle */
+      *::-webkit-scrollbar-thumb {
+        background: $primary-calendar-color;
+      }
+
+      /* Handle on hover */
+      *::-webkit-scrollbar-thumb:hover {
+        background: $primary-calendar-color;
+      }

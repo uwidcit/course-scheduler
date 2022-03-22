@@ -48,13 +48,12 @@ import { onValue, ref } from 'firebase/database';
 					
 				}
 
-				mat-menu{
-					padding-bottom: 0 !important;
-				}
+				
 
 				#notice-list{
-					 height: 15.4vh; /*clamp( 25vh, 15vh, 15vh); */
+					 height: 26.4vh; /*clamp( 25vh, 15vh, 15vh); */
 					 overflow-y: auto;
+					 
 				}
 				
 				.notice{
@@ -78,9 +77,14 @@ import { onValue, ref } from 'firebase/database';
 					/* bottom: -15.4vh; */
 					font-size: 14px;
 					height: 25px !important;
+					position: sticky;
+					top: 27vh;
 				}
 
-			
+				.center-text:hover{
+					background: #d0d0d0;
+					color: #1E88E5;
+				}
 	`]
 })
 export class FullComponent implements OnDestroy {
@@ -117,7 +121,7 @@ export class FullComponent implements OnDestroy {
 		private auth: AuthenticationService,
 		private firebase: FirebaseDBServiceService
 	) {
-		this.mobileQuery = media.matchMedia('(min-width: 1100px)');
+		this.mobileQuery = media.matchMedia('(min-width: 1700px)');
 		this._mobileQueryListener = () => changeDetectorRef.detectChanges();
 		// tslint:disable-next-line: deprecation
 		this.mobileQuery.addListener(this._mobileQueryListener);
@@ -130,7 +134,17 @@ export class FullComponent implements OnDestroy {
     	onValue(tableRef, (snapshot) => {
 			let result = snapshot.val()
 			
-			if( !result || !result[this.currentUser].notifications) return
+			//reset unreadNotification notice on refresh
+			this.unreadNotifications = false
+
+			console.log('Current USER Data: ', result[`${this.currentUser}`] )
+			if( !result || !result[this.currentUser] ||  !result[this.currentUser].notifications){ 
+				this.notifications = []
+				return
+			}
+
+			console.log("Checking for notifications for: ", this.currentUser)
+			
 			result[this.currentUser].notifications.forEach( (notice: { read: boolean, message: string, date: Date })=>{
 				if(this.unreadNotifications == false && !notice.read )
 					this.unreadNotifications = true

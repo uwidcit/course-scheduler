@@ -42,6 +42,9 @@ export class ProgrammeModalComponent implements OnInit {
   coursePeriod  = [] // = new FormControl(); ;
   degreeCourses: {name: string, type: string, offeredIn: {year:number, semester:number}[]}[] = []
 
+  removedCourses: string[] = []
+  addedCourses: string[] = []
+
   periodGroups = [
     {value: {year: 1, semester: 1}, viewValue: 'Year1/Semester1'},
     {value: {year: 1, semester: 2}, viewValue: 'Year1/Semester2'},
@@ -109,28 +112,58 @@ export class ProgrammeModalComponent implements OnInit {
     // console.log('Course Type', this.courseType)
     // console.log('Period', this.coursePeriod)
 
+
     if( this.isDuplicateCourse(this.newCourse) == true )
       this.displayMsg("This course already exists")
-    else if( this.newCourse!= '' && this.courseType!= '' && this.coursePeriod.length > 0 )
+    else if( this.newCourse!= '' && this.courseType!= '' && this.coursePeriod.length > 0 ){
       this.degreeCourses.push({name: this.newCourse, type: this.courseType, offeredIn: this.coursePeriod})
+
+      // KEEP TRACK OF COURSE MODIFICATIONS
+      this.addedCourses.push(this.newCourse)
+      // check if course was previously removed
+      if( this.removedCourses.includes(this.newCourse) ){
+        //get index and delete from removedCourses
+        let courseIndex = this.removedCourses.indexOf(this.newCourse)
+        this.removedCourses.splice(courseIndex,1)
+      }
+        
+    }
+      
     else
       this.displayMsg("Invalid Course Input!")
   }
 
   removeRow(index: number){
     let row = this.degreeCourses.splice(index, 1)
-    
+    let isPresent = false
+    // KEEP TRACK OF COURSE MODIFICATIONS
+    this.removedCourses.push(row[0].name)
+    // check if course was previously addedd
+    if( this.addedCourses.includes(row[0].name) ){
+      //get index and delete from 
+      isPresent = true
+      let courseIndex = this.addedCourses.indexOf(row[0].name)
+      this.addedCourses.splice(courseIndex,1)
+    }
     let snackBarRef = this.snackBar.open( "Course deleted!", "undo",{
       duration: 3000
     });
 
     snackBarRef.onAction().subscribe( ()=>{
       console.log("Deleted Row", row)
+      //add back deleted course
+      if( isPresent) //to account for courses that were not part of the original array
+        this.addedCourses.push(row[0].name)
+      this.removedCourses.pop()
+
+      this.degreeCourses.push(row[0])
       snackBarRef.dismiss();
+
+      let newSnackBar = this.snackBar.open( "Course restored!" )
     });
   }
 
-  onSave(){
+  async onSave(){
 
     if(this.name =='' || this.courseType =='' || this.degreeCourses.length== 0) return 
 
@@ -140,11 +173,29 @@ export class ProgrammeModalComponent implements OnInit {
     //for each course, create course object & set it in newProgramme
     for (let course of this.degreeCourses){
       newProgramme[`${course.name}`] = { type: course.type, offeredIn: course.offeredIn }//course
+
+      //update each course's list of degree 
     }
 
-    console.log("Saving ", newProgramme)
+    let notFoundMsg = ""
+    for( let course1 of this.addedCourses){
+      let successful = await this.firebase.updateCourseDegree(this.name, course1, true)
+      if ( !successful ) notFoundMsg += course1 + "\n "
+    }
+      
+
+    for( let course2 of this.removedCourses){
+      let successful = await this.firebase.updateCourseDegree(this.name, course2, false)
+      if ( !successful ) notFoundMsg += course2 + "\n "
+    }
     
-    this.writeProgramme(newProgramme, this.name)
+    console.log("Saving ", newProgramme)
+    if (notFoundMsg != ""){
+      this.displayMsg(notFoundMsg + "were not found to be updated!")
+      
+    }
+    else
+      this.writeProgramme(newProgramme, this.name)
     this.dialogRef.close();
   }
 
