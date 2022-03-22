@@ -8,7 +8,8 @@ import { FirebaseDBServiceService } from 'src/app/services/firebase-dbservice.se
 import {  child, onValue, push, ref, set } from "firebase/database";
 import { PromptDialogComponent } from '../prompt-dialog/prompt-dialog.component';
 import { AuthenticationService } from 'src/app/services/authentication.service';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { newArray } from '@angular/compiler/src/util';
 
 export interface DialogData {
   createdBy: string;
@@ -101,7 +102,7 @@ export class CalendarComponent implements OnInit {
 
   //localEvents = eventList    
   localEvents : any = [] ;        
-  constructor(private dialog: MatDialog, private promptDialog: MatDialog, private snackBar : MatSnackBar, private firebase: FirebaseDBServiceService, private auth: AuthenticationService,  private router: Router ) { 
+  constructor(private dialog: MatDialog, private promptDialog: MatDialog, private snackBar : MatSnackBar, private firebase: FirebaseDBServiceService, private auth: AuthenticationService,  private router: Router, private route:ActivatedRoute  ) { 
     
     //Get Firebase data
     const tablesRef = ref(this.firebase.dbRef);
@@ -111,21 +112,21 @@ export class CalendarComponent implements OnInit {
       
       this.semesterSchedule = data.semesterSchedule  // get the semesterSchedule
       
-      if ( !data.events || !data.courses  )return 
+      //if ( !data.events || !data.courses  )return 
       this.courses = data.courses;
 
-      console.log(data.events)
+      //console.log(data.events)
       Object.entries(data.events).forEach( (entry: any)=>{
         const [key, value] = entry;
         if( value.extendedProps.createdBy == this.currentUserId )
           value.editable = true
-        else 
-          value.editable = false
+        // else 
+        //   value.editable = false
         this.localEvents.push(value)
       })
       
 
-      if (!data.coursesPerProgramme) return
+      //if (!data.coursesPerProgramme) return
       this.degrees = data.coursesPerProgramme
 
       //get json of degrees & iterate as list
@@ -215,7 +216,7 @@ export class CalendarComponent implements OnInit {
           backgroundColor: this.isCoreCourse(result.extendedProps.course) ? '#fa0004' : '#00fa04', //result.backgroundColor,
           overlap: result.overlap,
           displayEventTime: true,
-          editable: true,
+          editable: false,
           extendedProps: result.extendedProps
         }
         
@@ -446,14 +447,23 @@ export class CalendarComponent implements OnInit {
       backgroundColor: event.backgroundColor,
       overlap: event.overlap,
       displayEventTime: true,
-      editable: true,
+      editable: false,
       extendedProps: event.extendedProps
     }
 
     if( !this.isInSemesterSchedule(newEvent.start , newEvent.end, newEvent.extendedProps.eventType ))
-      this.router.navigate(['/views'])
-    await this.editEvents( newEvent , true); //update = true
+      this.refreshPage()//this.router.navigate(['calendar'])
+    else
+      await this.editEvents( newEvent , true); //update = true
 
+  }
+
+  refreshPage(){
+    this.router.routeReuseStrategy.shouldReuseRoute = () => false
+    this.router.onSameUrlNavigation = "reload"
+    this.router.navigate(["./views/calendar"], {
+      relativeTo: this.route
+    })
   }
 
   displayMessage(message: string){
@@ -503,7 +513,7 @@ export class CalendarComponent implements OnInit {
   }
 
 
-  async editEvents(newEvent: { title: string; }, isUpdate: boolean ){
+  async editEvents(newEvent: { title: string, start: string, end:string }, isUpdate: boolean ){
     this.displayMessage(`Checking for clahses with ${newEvent.title} ...`)
 
         let eventOverlaps: {title: string, type: string, createdBy:string}[] = [] //DialogData[] = []
@@ -525,9 +535,15 @@ export class CalendarComponent implements OnInit {
         //Prompt user if overlaps found, else add event or update if isUpdate
         let userresponse : boolean = true ;
         if( eventOverlaps.length > 0 ){
+          let freeSlots = this.suggestFreeTimeSlot(newEvent.start, newEvent.end)
+          console.log("Free Slots", freeSlots )
+
           let dialogRef = this.promptDialog.open( PromptDialogComponent, {width: '50vw', data: eventOverlaps})
           dialogRef.afterClosed().subscribe( (saveEvent : boolean) =>{
-            if( !saveEvent) this.displayMessage('Cancelling Update!')
+            if( !saveEvent) {
+              this.displayMessage('Cancelling Update!')
+              this.refreshPage()
+            } 
             else if(  !isUpdate && saveEvent )
               this.writeEvent(newEvent)
             else if ( isUpdate  && saveEvent)
@@ -574,13 +590,14 @@ export class CalendarComponent implements OnInit {
       backgroundColor: event.backgroundColor,
       overlap: event.overlap,
       displayEventTime: true,
-      editable: true,
+      editable: false,
       extendedProps: event.extendedProps
     }
 
     if( !this.isInSemesterSchedule(newEvent.start , newEvent.end, newEvent.extendedProps.eventType ))
-      this.router.navigate(['/views'])
-    await this.editEvents( newEvent , true); //update = true
+      this.refreshPage()
+    else
+      await this.editEvents( newEvent , true); //update = true
 
   }
 
@@ -651,11 +668,18 @@ export class CalendarComponent implements OnInit {
   isInSemesterSchedule(start:string, end: string, assessmentType:string ){
     console.log(" Running isInSemesterSchedule fn...")
     
+    //if event is being secheduled before current Date
+    if( Date.parse(start) < Date.now() ){
+      this.displayMessage("Events can only be sechduled from Current Date!")
+      return false
+    }
+
     let event = { start: Date.parse(`${start}`), end: Date.parse(`${end}`) }
     //Get either the teaching or exam period for comparison
     let schedulingPeriod = assessmentType.toLowerCase() == "assignment" ? { start: Date.parse(`${this.semesterSchedule.teaching.start}`), end: Date.parse(`${this.semesterSchedule.teaching.end}`) }
                                                           : { start: Date.parse(`${this.semesterSchedule.exam.start}`), end: Date.parse(`${this.semesterSchedule.exam.end}`) }
 
+     //IF it's past the scheduling period
     if( Date.now() >= schedulingPeriod.end && assessmentType.toLowerCase() =="assignment")
       this.displayMessage("The period for scheduling Assignments has passed!\n Ask your admin to extend it! ")
     else( Date.now() >= schedulingPeriod.end && assessmentType.toLowerCase() =="exam")
@@ -670,6 +694,104 @@ export class CalendarComponent implements OnInit {
     else
       this.displayMessage("Invalid Date Range for exams")
       return false
+  }
+
+  suggestFreeTimeSlot(start: string, end:string){
+    //get the # of days for incoming event
+    let numberDays = Date.parse(end) - Date.parse(start) 
+
+    let isTeachingPeriod = Date.now() <= Date.parse(this.semesterSchedule.teaching.end) ? true : false
+    
+
+    //create an array to plot all current events
+    let arr = []
+    let numMonths = -1
+    if ( isTeachingPeriod ){
+      numMonths = this.getmonthDiff( new Date(Date.now()), new Date(this.semesterSchedule.teaching.end ) )
+
+      arr = new Array(numMonths)
+      for (let i=0; i< arr.length; i++ )
+        arr[i] = new Array(31)
+
+      for( let event of this.localEvents){
+        let eventStart = Date.parse(event.start)
+        let eventEnd = Date.parse(event.end)
+        
+
+        if( eventStart >= Date.now() && eventEnd <= Date.parse(this.semesterSchedule.teaching.end)){
+          let daysDiff = eventEnd - eventStart
+          let months = this.getmonthDiff( new Date(event.start), new Date(event.start) )
+          while(months >=0 ){
+            let day = new Date(eventStart).getDate()
+            for( let num=0; num <=daysDiff; num++  ) //add one to each date an event ocupies
+              arr[months][day + num] =  arr[months][day + num] ? arr[months][day + num - 1] + 1 :  1
+              months -=1
+          }
+        }//end of if
+        
+      }//end of for events
+
+      //iterate through each and find n consecutive free slots
+
+    }//end of teachingPeriod check
+    else if ( !isTeachingPeriod ){
+      numMonths = this.getmonthDiff( new Date(Date.now()), new Date(this.semesterSchedule.exam.end ) )
+
+      arr = new Array(numMonths)
+      for (let i=0; i< arr.length; i++ )
+        arr[i] = new Array(31)
+
+      for( let event of this.localEvents){
+        let eventStart = Date.parse(event.start)
+        let eventEnd = Date.parse(event.end)
+        
+
+        if( eventStart >= Date.now() && eventEnd <= Date.parse(this.semesterSchedule.exam.end)){
+          let daysDiff = eventEnd - eventStart
+          let months = this.getmonthDiff( new Date(event.start), new Date(event.start) )
+          while(months >=0 ){
+            let day = new Date(eventStart).getDate()
+            for( let num=0; num <=daysDiff; num++  ) //add one to each date an event ocupies
+              arr[months][day + num] =  arr[months][day + num] ? arr[months][day + num - 1] + 1 :  1
+              months -=1
+          }
+        }//end of if
+        
+      }//end of for events
+
+      //iterate through each and find n consecutive free slots
+
+    }
+    
+    let currentDate = new Date(Date.now()).getDate()
+    let currentYear = new Date(Date.now()).getFullYear()
+    let currentMonth = new Date(Date.now()).getMonth() + 1
+    let freeSlot = [] 
+    while( numMonths >=0){
+      for( let index=31;  index > 0 + numberDays; index-=1)
+       if( this.hasN_FreeSlots(numberDays, numMonths, index, arr) )
+        if( (index > currentDate && numMonths==0) || numMonths !=0   ) //
+          freeSlot.push( {start: `${currentYear}-${currentMonth}-${index}T${start.split('T')[1]}`, end: `${currentYear}-${currentMonth}-${index+numberDays}T${start.split('T')[1]}`} )
+
+      numMonths-=1
+    }
+
+    return freeSlot
+  }
+
+  getmonthDiff(d1 : Date, d2: Date ) {
+    var months;
+    months = (d2.getFullYear() - d1.getFullYear()) * 12;
+    months -= d1.getMonth();
+    months += d2.getMonth();
+    return months <= 0 ? 0 : months;
+  }
+
+  hasN_FreeSlots(n:number, constantIndex: number, index2:number, arr: any){
+    for( let a = index2; a< index2 + n; a++)
+      if(arr[constantIndex][a]!==null &&  arr[constantIndex][a]!==1) return false
+    
+    return true
   }
 
 }

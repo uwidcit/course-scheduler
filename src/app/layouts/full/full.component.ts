@@ -137,8 +137,13 @@ export class FullComponent implements OnDestroy {
 			//reset unreadNotification notice on refresh
 			this.unreadNotifications = false
 
-			if( !result || !result[this.currentUser].notifications) return
+			console.log('Current USER Data: ', result[`${this.currentUser}`] )
+			if( !result || !result[this.currentUser] ||  !result[this.currentUser].notifications){ 
+				this.notifications = []
+				return
+			}
 
+			console.log("Checking for notifications for: ", this.currentUser)
 			
 			result[this.currentUser].notifications.forEach( (notice: { read: boolean, message: string, date: Date })=>{
 				if(this.unreadNotifications == false && !notice.read )

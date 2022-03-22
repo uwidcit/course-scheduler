@@ -51,10 +51,11 @@
     
 }
 
-.fc-event-title-container:hover{
-    font-size: medium;
-    font-weight: 600;
-}
+//Enlargen Event
+// .fc-event-title-container{
+//     font-size: medium;
+//     font-weight: 600;
+// }
 
 .fc-daygrid-event{
     border-radius: 10px !important;
@@ -75,7 +76,7 @@
       /* Track */
       *::-webkit-scrollbar-track {
         background: transparent;
-        filter: drop-shadow(0px 0px 10px $primary-calendar-color) !important;
+        filter: drop-shadow(0px 0px 15px $primary-calendar-color) !important;
         box-shadow: 0px 5px 20px $primary-calendar-color;
       }
 
