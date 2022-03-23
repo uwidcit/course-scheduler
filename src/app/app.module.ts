@@ -44,7 +44,6 @@ import { ProgrammeComponent } from './layouts/programme/programme.component';
 
 import { Ng2SearchPipeModule } from 'ng2-search-filter';
 import { ProgrammeModalComponent } from './layouts/programme-modal/programme-modal.component';
-import { AuthGuard } from './services/auth.guard';
 
 export function HttpLoaderFactory(http: HttpClient) {
   return new TranslateHttpLoader(http, './assets/i18n/', '.json');
@@ -102,8 +101,7 @@ const DEFAULT_PERFECT_SCROLLBAR_CONFIG: PerfectScrollbarConfigInterface = {
       provide: PERFECT_SCROLLBAR_CONFIG,
       useValue: DEFAULT_PERFECT_SCROLLBAR_CONFIG
     },
-    FirebaseDBServiceService,
-    AuthGuard
+    FirebaseDBServiceService
   ],
   bootstrap: [AppComponent]
 })
