@@ -1,11 +1,21 @@
 
 <div class="wrapper">
+    
+    <main *ngIf="localEvents.length > 0 then calendar ; else spinner " > </main>
+    <!-- {{courses  |  json}} -->
+</div>
+
+
+<ng-template #calendar>
     <header>
         <span id="title"></span>
         <span class="keys"> <mat-icon class="core">circle</mat-icon>Elective Courses </span>
         <span class="keys"> <mat-icon class="elective">circle</mat-icon>Core Courses </span>
         
     </header>
-    <full-calendar #calendar deepChangeDetection="true" [options]="calendarOptions"></full-calendar>
-    <!-- {{courses  |  json}} -->
-</div>
+    <full-calendar deepChangeDetection="true" [options]="calendarOptions"></full-calendar>
+</ng-template>
+
+<ng-template #spinner >
+    <mat-spinner></mat-spinner>
+</ng-template>

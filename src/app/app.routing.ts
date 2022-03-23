@@ -29,7 +29,7 @@ export const AppRoutes: Routes = [
        },
        {
         path: '**',
-        redirectTo: '/views/calendar',
+        redirectTo: '/login',
         pathMatch: 'full'
     },
 ];

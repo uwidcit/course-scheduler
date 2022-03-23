@@ -114,7 +114,7 @@ export class FirebaseDBServiceService {
     set( tableRef, result)
     
     
-    return this.http.post<string>( environment.backendURL + "/send_email",
+    return this.http.post<{message:string, error: string}>( environment.backendURL + "/send_email",
                             {
                               name: "Assessment Scheduler App",
                               recipient: userID, 
@@ -151,7 +151,7 @@ export class FirebaseDBServiceService {
       message: message
     }
     let url = environment.backendURL + "/send_email" //
-    return this.http.post<string>( url, request)
+    return this.http.post<{message:string, error:string}>( url, request)
   }
 
   writeUserData( userID: string, email: string){

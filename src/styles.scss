@@ -10,6 +10,19 @@
     $primary-calendar-color: #60BBEE;// #C1D0ED ; //#2fa4e7
     $secondary-calendar-color: #2fa4e7 ;//#60BBEE;
 
+    .info{
+      background: #cff4fc !important;
+      color: #0a58ca !important;
+    }
+
+    .error{
+      background: rgb(223, 8, 8) !important;
+      color: #fff !important;
+    }
+    .success{
+      background: greenyellow !important;
+      color: $fc-border-color !important;
+    }
   #app-title{
       color: #fff;
   }
