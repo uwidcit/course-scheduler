@@ -35,23 +35,35 @@ export class PromptDialogComponent implements OnInit {
   core = "red  !important"
   elective ="orange  !important"
 
+  checked: boolean = false
+
   getColor(type: string){
     if ( type=='core') return 'chip core'//this.core
     else return 'chip elective' //this.elective
   }
   
-  constructor(public dialogRef: MatDialogRef<PromptDialogComponent>, @Inject(MAT_DIALOG_DATA) public data: overlapData ) { }
+  constructor(public dialogRef: MatDialogRef<PromptDialogComponent>, @Inject(MAT_DIALOG_DATA) public data: any ) { }
+
+  toDate(startDate: string, endDate: string){
+    return new Date(startDate).toDateString() + new Date(endDate).toDateString()
+  }
 
   ngOnInit(): void {
     console.log( this.data)
   }
 
   onSave(){
-    this.dialogRef.close(true)
+    let results
+    if(this.checked)
+      results = {save: true, start: this.data.freeSlots.start, end: this.data.freeSlots.end}
+    else
+      results = {save: true}
+
+    this.dialogRef.close(results)
   }
 
   onCancel(){
-    this.dialogRef.close(false)
+    this.dialogRef.close({save: false})
   }
 
 }

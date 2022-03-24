@@ -3,9 +3,12 @@
    
   
   <div mat-dialog-content class="events">
-    <mat-list role="list" *ngFor="let item of data" >
+    <mat-list role="list" *ngFor="let item of data.events" >
       <mat-list-item role="listitem"> {{item.title}} <span [ngClass]="getColor(item.type)">{{item.type}}</span> </mat-list-item>
     </mat-list>
+    
+    
+    <section *ngIf="data.freeSlots then newDates"></section>
     
   </div>
 
@@ -17,3 +20,8 @@
   </div>
 </div>
 
+<ng-template #newDates>
+  <mat-divider></mat-divider>
+  <p>Next Available Date (Check the box to select it ✓)</p> 
+  <mat-checkbox class="example-margin" [(ngModel)]="checked">{{ toDate(data.freeSlots.start, data.freeSlots.end)}}</mat-checkbox>
+</ng-template>
