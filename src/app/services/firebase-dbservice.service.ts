@@ -55,6 +55,13 @@ export class FirebaseDBServiceService {
     remove(tableRef)
   }
 
+  deleteUser( userId: string){
+    const tableRef = ref( this.dbRef, `users/${userId}`)
+
+    remove(tableRef)
+   
+  }
+
 
   getUserNotifications(tableRef: DatabaseReference){
     let result ;

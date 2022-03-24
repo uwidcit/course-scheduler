@@ -44,6 +44,7 @@ import { ProgrammeComponent } from './layouts/programme/programme.component';
 
 import { Ng2SearchPipeModule } from 'ng2-search-filter';
 import { ProgrammeModalComponent } from './layouts/programme-modal/programme-modal.component';
+import { AdminComponent } from './layouts/admin/admin.component';
 export function HttpLoaderFactory(http: HttpClient) {
   return new TranslateHttpLoader(http, './assets/i18n/', '.json');
 }
@@ -69,6 +70,7 @@ const DEFAULT_PERFECT_SCROLLBAR_CONFIG: PerfectScrollbarConfigInterface = {
     LoginComponent,
     ProgrammeComponent,
     ProgrammeModalComponent,
+    AdminComponent,
   ],
   imports: [
     BrowserModule,

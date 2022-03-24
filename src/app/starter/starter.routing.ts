@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { AdminComponent } from '../layouts/admin/admin.component';
 import { ProgrammeComponent } from '../layouts/programme/programme.component';
 
 import { StarterComponent } from './starter.component';
@@ -23,6 +24,10 @@ export const StarterRoutes: Routes = [
     {
         path: 'programmes',
         component: ProgrammeComponent
+    },
+    {
+        path: 'admin',
+        component: AdminComponent
     },
     {
         path: '**',
