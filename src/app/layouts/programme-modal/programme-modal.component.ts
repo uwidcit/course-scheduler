@@ -159,7 +159,10 @@ export class ProgrammeModalComponent implements OnInit {
       this.degreeCourses.push(row[0])
       snackBarRef.dismiss();
 
-      let newSnackBar = this.snackBar.open( "Course restored!" )
+      let newSnackBar = this.snackBar.open( "Course restored!", "close", {duration: 3000} )
+      newSnackBar.onAction().subscribe( ()=>{
+        newSnackBar.dismiss();
+      })
     });
   }
 

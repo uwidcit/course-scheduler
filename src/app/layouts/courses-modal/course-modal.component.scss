@@ -1,0 +1,19 @@
+#header{
+    display: flex;
+    flex-direction: row;
+  }
+  .spacer{
+    flex: 1 0 auto;
+  }
+
+  table{
+    width: 80% !important;
+    
+  }
+
+  .mat-dialog-content{
+    height: 90%;
+  }
+  td{
+    text-align: center !important;
+  }

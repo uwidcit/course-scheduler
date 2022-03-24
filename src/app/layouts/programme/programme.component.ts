@@ -60,8 +60,6 @@ export class ProgrammeComponent implements OnInit {
 
       
    }) //end of firebase realtime fn
-
-  
   }
 
   ngOnInit(): void {
@@ -72,6 +70,7 @@ export class ProgrammeComponent implements OnInit {
     this.currIndex = index
     this.currDegree = this.degrees[index]
     console.log("Currently Selected: ", this.currDegree)
+    //console.log(this.currDegree.name)
     this.selected = true
   }
 
@@ -97,6 +96,7 @@ export class ProgrammeComponent implements OnInit {
     });
     
   }
+
 
   deleteCourse(){
     this.firebase.deleteProgramme(`${this.currDegree?.name}`)

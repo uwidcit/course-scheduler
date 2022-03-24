@@ -1,1 +1,92 @@
-<p>courses works!</p>
+<div class="container">
+    <!-- TO display course List -->
+    <div class="side" >
+       
+        <div *ngIf="filteredCourse.length > 0 then list; else noList"> </div>
+        
+    </div>
+    <!-- For selected course -->
+    <main>
+        <mat-toolbar> 
+            <div class="spacer"></div>
+            <mat-icon  matSuffix aria-hidden="false" aria-label="add icon" (click)="openDialog(false)">add</mat-icon>
+            
+        </mat-toolbar>
+        <div *ngIf="selected && currentCourse!=null then selected; else notSelected;"></div>
+
+    </main>
+
+</div>
+
+
+<ng-template #list>
+    <mat-toolbar hidden>
+        <input  matInput type="text" placeholder="Seach Course" id="searchBar" [(ngModel)]="filterTerm" /> 
+        
+        <mat-icon > search</mat-icon>
+    </mat-toolbar>
+    <mat-selection-list #courseList [multiple]="false" [value]="selected">
+        <mat-list-option *ngFor="let course of filteredCourse | filter: filterTerm; index as i" [value]="course.courseName" (click)="selectCourse( i)">
+            {{course.courseName}}
+        </mat-list-option>
+    </mat-selection-list>
+</ng-template>
+
+<ng-template #noList>
+    <app-spinner> </app-spinner>
+</ng-template>
+
+<ng-template #selected>
+    <h2 id="courseName" class="spacer"> {{currentCourse.courseName}} </h2>
+
+    <table>
+        <tr>
+            <th colspan="2"> <div class="headingIcon"><mat-icon (click)="openDialog( true )" matSuffix>mode_edit</mat-icon> <mat-icon (click)="deleteCourse()" style="margin-left: 5px;" matSuffix>delete</mat-icon></div> </th>
+        </tr>
+        <tr>
+            <th colspan="1"><div class="headings">Course Name</div></th>
+            <td>{{currentCourse.name}}</td>
+        </tr>
+       
+        <tr>
+            <th colspan="1"><div class="headings">Faculty</div></th>
+            <td>{{currentCourse.faculty}}</td>
+        </tr>
+          
+        <tr>
+            <th colspan="1"><div class="headings">Associated Degrees</div></th>
+            <!-- <td>{{currentCourse.degrees}}</td> -->
+            <td>
+                <mat-chip-list>
+                    <mat-chip *ngFor="let degree of currentCourse.degrees">{{degree}}</mat-chip>
+                </mat-chip-list>
+            </td>
+        </tr>
+        <tr>
+            
+        </tr>       
+        <tr>
+            <th colspan="1"><div class="headings">Asessments</div></th>
+            <th colspan="1"><div class="headings">Weighting</div></th>
+        </tr>
+
+        <tr *ngFor="let course of currentCourse.assessments">
+            <td>
+                {{course.type}} 
+            </td>
+            <td>
+                {{course.weighting}}
+            </td>
+        </tr>    
+        <tr>
+            <th colspan="1"><div class="headings">Total:</div></th>
+            <td>100%</td>
+        </tr>
+    </table>
+</ng-template>
+
+
+<ng-template #notSelected>
+    <div class="none"> Select a course</div>
+</ng-template>
+
