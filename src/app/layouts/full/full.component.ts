@@ -48,13 +48,12 @@ import { onValue, ref } from 'firebase/database';
 					
 				}
 
-				mat-menu{
-					padding-bottom: 0 !important;
-				}
+				
 
 				#notice-list{
-					 height: 15.4vh; /*clamp( 25vh, 15vh, 15vh); */
+					 height: 26.4vh; /*clamp( 25vh, 15vh, 15vh); */
 					 overflow-y: auto;
+					 
 				}
 				
 				.notice{
@@ -78,9 +77,14 @@ import { onValue, ref } from 'firebase/database';
 					/* bottom: -15.4vh; */
 					font-size: 14px;
 					height: 25px !important;
+					position: sticky;
+					top: 27vh;
 				}
 
-			
+				.center-text:hover{
+					background: #d0d0d0;
+					color: #1E88E5;
+				}
 	`]
 })
 export class FullComponent implements OnDestroy {
@@ -109,6 +113,7 @@ export class FullComponent implements OnDestroy {
 	// tslint:disable-next-line - Disables all
 	private _mobileQueryListener: () => void;
 
+	
 	constructor(
 		public router: Router,
 		changeDetectorRef: ChangeDetectorRef,
@@ -116,8 +121,9 @@ export class FullComponent implements OnDestroy {
 		public menuItems: MenuItems,
 		private auth: AuthenticationService,
 		private firebase: FirebaseDBServiceService
-	) {
-		this.mobileQuery = media.matchMedia('(min-width: 1100px)');
+	) { 
+		
+		this.mobileQuery = media.matchMedia('(min-width: 1700px)');
 		this._mobileQueryListener = () => changeDetectorRef.detectChanges();
 		// tslint:disable-next-line: deprecation
 		this.mobileQuery.addListener(this._mobileQueryListener);
@@ -125,12 +131,30 @@ export class FullComponent implements OnDestroy {
 		// const body = document.getElementsByTagName('body')[0];
 		// body.classList.toggle('dark');
 		this.dark = false;
+
+		if (this.auth.loggedIn){
+			this.currentUser = this.auth.currentUser?.uid 
+			console.log(this.currentUser)
+		}
+		else{
+			this.router.navigate(['login']);
+		}
 		
 		const tableRef = ref(this.firebase.dbRef, `users`);
     	onValue(tableRef, (snapshot) => {
 			let result = snapshot.val()
 			
-			if( !result || !result[this.currentUser].notifications) return
+			//reset unreadNotification notice on refresh
+			this.unreadNotifications = false
+
+			console.log('Current USER Data: ', result[`${this.currentUser}`] )
+			if( !result || !result[this.currentUser] ||  !result[this.currentUser].notifications){ 
+				this.notifications = []
+				return
+			}
+
+			console.log("Checking for notifications for: ", this.currentUser)
+			
 			result[this.currentUser].notifications.forEach( (notice: { read: boolean, message: string, date: Date })=>{
 				if(this.unreadNotifications == false && !notice.read )
 					this.unreadNotifications = true
@@ -150,13 +174,7 @@ export class FullComponent implements OnDestroy {
 		//const body = document.getElementsByTagName('body')[0];
 		// body.classList.add('dark');
 
-		if (this.auth.loggedIn){
-			this.currentUser = this.auth.currentUser?.uid
-			console.log(this.currentUser)
-		}
-		else{
-			this.router.navigate(['login']);
-		}
+		
 	}
 
 	clickEvent(): void {
@@ -177,18 +195,21 @@ export class FullComponent implements OnDestroy {
 	}
 
 	signOut(){
-		this.auth.logout();
-		this.router.navigate(['login']);  //redirect user to login
+		this.auth.logout().subscribe(()=>{
+			if(!this.auth.loggedIn)
+				this.router.navigate(['login']);  //redirect user to login
+		});
+		
 	}
 
 	readAll(){
 		this.firebase.readAllNotifications(this.currentUser)
-		this.router.navigate(['views/calendar'])
+		
 	}
 
 	clearAllNotifications(){
 		this.firebase.deleteUserNotifications(this.currentUser)
-		this.router.navigate(['views/calendar'])
+		
 	}	
 
 }

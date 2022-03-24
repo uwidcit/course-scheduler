@@ -42,6 +42,41 @@ export class FirebaseDBServiceService {
       return result
   }
 
+  async getCourseDegrees( courseName: string){
+    const tableRef = ref(this.dbRef, `courses/${courseName}/degrees`)
+
+    let result: string[] = [];
+    onValue(tableRef, (snapshot) => {
+      result = snapshot.val();
+      
+    });
+
+    if( !result ) result = [];
+    
+    return result
+  }
+
+  async updateCourseDegree(degreeName: string, course: string, isNewCourse: boolean){
+    let degreeArr = await this.getCourseDegrees(course)
+
+    if( degreeArr.length == 0 && isNewCourse==false ) return false; //if empty array found on Delete operation
+
+    if( isNewCourse )
+      degreeArr.push( degreeName)
+
+    else{
+        //find degree location & update array 
+      let degreeIndex = degreeArr.indexOf(degreeName)
+      if( degreeIndex == -1) return false
+      degreeArr.splice(degreeIndex, 1)
+    }
+    
+    //update array of degrees in Course json
+    let tableRef = ref(this.dbRef, `courses/${course}/degrees`)
+    set( tableRef, degreeArr)
+    return true
+  }
+
 
   deleteEvent( eventId: string){
     const tableRef = ref( this.dbRef, `events/${eventId}`)
@@ -72,7 +107,7 @@ export class FirebaseDBServiceService {
     return result
   }
 
-  createNotification(userID: string, eventName: string, message : string, ){
+  createNotification(userID: string, eventName: string, message : string){
     // User { {email, message, date, read}, {}}
     let path = 'users/' + userID + '/notifications'
     const tableRef = ref(this.dbRef, path )
@@ -84,6 +119,15 @@ export class FirebaseDBServiceService {
     result.push({eventName: eventName, message: message, date: new Date().toLocaleDateString(), read: false })
 
     set( tableRef, result)
+    
+    
+    return this.http.post<{message:string, error: string}>( environment.backendURL + "/send_email",
+                            {
+                              name: "Assessment Scheduler App",
+                              recipient: userID, 
+                              subject: "Clash Notification for '" + eventName +"'",
+                              message: message
+                            });
   }
 
   readAllNotifications(userID: string ){
@@ -108,12 +152,19 @@ export class FirebaseDBServiceService {
 
   sendEmail(eventName: string,message: string, recipient: string){
     let request = {
-      // name: "",
-      recipient: 'jeremiahstrong321@gmail.com', //recipient,
+      name: "Assessment Scheduler App", 
+      recipient: recipient,
       subject: "Clash Notification for '" + eventName +"'",
       message: message
     }
-    let url = "node-email-server1.herokuapp.com/send_email"
-    this.http.post( url, request)
+    let url = environment.backendURL + "/send_email" //
+    return this.http.post<{message:string, error:string}>( url, request)
+  }
+
+  writeUserData( userID: string, email: string){
+    const tableRef = ref(this.dbRef, `users/${userID}`)
+
+    let userData = { email: email}
+    return set(tableRef, userData)
   }
 }

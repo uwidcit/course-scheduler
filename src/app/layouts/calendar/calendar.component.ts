@@ -9,6 +9,9 @@ import {  child, onValue, push, ref, set } from "firebase/database";
 import { PromptDialogComponent } from '../prompt-dialog/prompt-dialog.component';
 import { AuthenticationService } from 'src/app/services/authentication.service';
 
+import { newArray } from '@angular/compiler/src/util';
+import { Router } from '@angular/router';
+
 export interface DialogData {
   createdBy: string;
   //date : Date; 
@@ -66,7 +69,10 @@ export interface Course{
         font-weight: 700;
       }
       
-      
+      mat-spinner{
+        margin-top: 35vh;
+        margin-left: 45%;
+      }
       .calendar_modal{
         background: rgba( 248, 248, 248, 0.5 ) !important;
         box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 ) !important;
@@ -78,6 +84,7 @@ export interface Course{
   `]
 })
 export class CalendarComponent implements OnInit {
+  semesterSchedule: any 
   coreCourses: string[] = []  // from list of degrees
   degrees: {[key:string]: {[key:string]: any}} = {}
 
@@ -98,30 +105,35 @@ export class CalendarComponent implements OnInit {
                   }
 
   //localEvents = eventList    
-  localEvents : JSON[] = [] ;        
-  constructor(private dialog: MatDialog, private promptDialog: MatDialog, private snackBar : MatSnackBar, private firebase: FirebaseDBServiceService, private auth: AuthenticationService ) { 
-    
+  localEvents : any = [] ;        
+  constructor(private dialog: MatDialog, private promptDialog: MatDialog, private snackBar : MatSnackBar, private firebase: FirebaseDBServiceService, private auth: AuthenticationService, private router: Router ) { 
+    if (this.auth.loggedIn)
+      this.currentUserId = this.auth.currentUser?.uid || '' 
+    else
+      this.router.navigate(['login'])
     //Get Firebase data
     const tablesRef = ref(this.firebase.dbRef);
     onValue(tablesRef, (snapshot) => {
       this.localEvents.length = 0;
       const data = snapshot.val();
-      this.courses = data.courses;
       
-      if ( !data.events || !data.courses  )return 
+      this.semesterSchedule = data.semesterSchedule  // get the semesterSchedule
+      
+      
+      this.courses = data.courses;
 
-      console.log(data.events)
+      //console.log(data.events)
       Object.entries(data.events).forEach( (entry: any)=>{
         const [key, value] = entry;
         if( value.extendedProps.createdBy == this.currentUserId )
           value.editable = true
-        else 
-          value.editable = false
+        // else 
+        //   value.editable = false
         this.localEvents.push(value)
       })
       
 
-      if (!data.coursesPerProgramme) return
+      //if (!data.coursesPerProgramme) return
       this.degrees = data.coursesPerProgramme
 
       //get json of degrees & iterate as list
@@ -137,7 +149,7 @@ export class CalendarComponent implements OnInit {
         })
       })
       
-      //this.localEvents = data.events
+      
     });
 
     
@@ -148,7 +160,7 @@ export class CalendarComponent implements OnInit {
       height: "84vh",
       eventChange: function ( arg){ console.log('Changed ',arg.event)},
       eventClick: this.handleEventClick.bind(this),
-      //eventMouseEnter: this.handleEventHover.bind(this),
+      eventMouseEnter: this.handleEventHover.bind(this),
       eventResize: this.handleEventResize.bind(this),
       eventDrop: this.handleEventDrop.bind(this), //function (arg) { console.log('Darg & Dropped Event' ,arg)},
       dateClick: this.handleDateClick.bind(this), // bind to handle any click on calendar important!
@@ -161,11 +173,6 @@ export class CalendarComponent implements OnInit {
         center: 'title',
         right: 'prev,next'
       },
-      // dayPopoverFormat: {
-      //   month: 'numeric',
-      //   day: 'numeric',
-      //   year: 'numeric',
-      // },
       editable: true,
       slotEventOverlap: true,
       allDaySlot: true,   //to display all day events at the top in "allday" for week & day view
@@ -175,10 +182,7 @@ export class CalendarComponent implements OnInit {
   } //end of constructor
 
   ngOnInit(): void {
-    if (this.auth.loggedIn){
-      this.currentUserId = this.auth.currentUser?.uid || ''
-       
-    }
+    
     
   }
 
@@ -199,7 +203,7 @@ export class CalendarComponent implements OnInit {
       if( result !=null && result.delete){
         let eventTitle = result.title
         this.firebase.deleteEvent(result.id)
-        this.displayMessage(`${eventTitle} was deleted!`)
+        this.displayMessage(`${eventTitle} was deleted!`, 'success')
       }
       else if ( result !=null && !result.delete ){
         let newEvent :any = {
@@ -211,30 +215,26 @@ export class CalendarComponent implements OnInit {
           backgroundColor: this.isCoreCourse(result.extendedProps.course) ? '#fa0004' : '#00fa04', //result.backgroundColor,
           overlap: result.overlap,
           displayEventTime: true,
-          editable: true,
+          editable: false,
           extendedProps: result.extendedProps
         }
-
-        await this.editEvents( newEvent , result.update)
-         //this.calendarOptions.eventSources?.push(result);//this.localEvents
+        
+        if ( this.courseAssessmentWithinLimit( newEvent.extendedProps.course, newEvent.extendedProps.eventType)  && this.isInSemesterSchedule(newEvent.start , newEvent.end, newEvent.extendedProps.eventType ))
+          await this.editEvents( newEvent , result.update)
+         
       }
       else {
 
         if ( result == null || result ==undefined  )
-        this.displayMessage('Modal Closed')
+        this.displayMessage('Modal Closed', 'info')
         else
           console.log("invalid Event entry")
       }
     });
   }
-  // references the #calendar in the template
-  // references the #calendar in the template
 
-  // someMethod() {
-  //   let calendarApi = this.calendarComponent.getApi();
-  //   console.log(calendarApi)
-  //   calendarApi.next();
-  // }
+
+  
 
   handleDateClick(arg: {date : Date, dateStr :String, allDay:boolean }) {
     //alert('date click! ' + arg.dateStr)
@@ -304,15 +304,7 @@ export class CalendarComponent implements OnInit {
   }
 
   handleEventHover( eventInfo: any){
-    console.log( eventInfo )
-    // let dateSplit:any = eventInfo.event.start.match(/\w+\s*\w+\s*\d{2}/)
-    // let start = dateSplit[0];  // to get the First part of the date: 'Wed Feb 02
     
-    // dateSplit = eventInfo.event.start.match(/\w+\s*\w+\s*\d{2}\s*\d{4}/)
-    // let end = dateSplit[0];
-    
-    // let start_date : String = eventInfo.event.start.toUTCString().replace(',', '')
-    // let end_date : String = eventInfo.event.end.toUTCString().replace(',', '')
 
     let displayMsg ;
     if (eventInfo.event.start && eventInfo.event.end){
@@ -320,38 +312,24 @@ export class CalendarComponent implements OnInit {
       let start_date : String = eventInfo.event.start.toDateString()
       let end_date : String = eventInfo.event.end.toDateString()
 
-      // let dateSplit:any = start_date.match(/\w+\s*\d{2}\s*\w+/)
-      // start_date = dateSplit[0];  // to get the First part of the date: 'Wed Feb 02
       
-      // dateSplit = end_date.match(/\w+\s*\d{2}\s*\w+\s*\d{4}/)
-      // end_date = dateSplit[0];
 
       if ( start_date == end_date ){
-        let time: String = eventInfo.event.start.toTimeString()
-        let startTime = time.split(' ')[0]
-
-        time= eventInfo.event.end.toTimeString()
-        let endTime = time.split(' ')[0]
-        displayMsg = `${eventInfo.event.title} by Jerry \n Duration: ${start_date} ${startTime}- ${endTime}`
+        
+        displayMsg = `${eventInfo.event.title} (${eventInfo.event.extendedProps.eventType})`
       }
       else
-      displayMsg = `${eventInfo.event.title} by Jerry \n
-      Duration: ${start_date} - ${end_date}`
+      displayMsg = `${eventInfo.event.title} (${eventInfo.event.extendedProps.eventType})`
       
     }
 
     else 
-      displayMsg = eventInfo.event.title
+      displayMsg = eventInfo.event.title + ` (${eventInfo.event.extendedProps.eventType})`
 
-    console.log(eventInfo.event.start, '\n', eventInfo.event.end  )
     
-    this.displayMessage(displayMsg)
-    // let snackBarRef = this.snackBar.open(displayMsg, 'Close',{ duration: 3000})
-
-    // //listen for close event
-    // snackBarRef.onAction().subscribe(() => {
-    //   snackBarRef.dismiss(); 
-    // });
+    
+    this.displayMessage(displayMsg, 'info')
+    
   }
 
   
@@ -441,16 +419,29 @@ export class CalendarComponent implements OnInit {
       backgroundColor: event.backgroundColor,
       overlap: event.overlap,
       displayEventTime: true,
-      editable: true,
+      editable: false,
       extendedProps: event.extendedProps
     }
 
-    await this.editEvents( newEvent , true); //update = true
+    if( !this.isInSemesterSchedule(newEvent.start , newEvent.end, newEvent.extendedProps.eventType ))
+      this.refreshPage()
+    else
+      await this.editEvents( newEvent , true); //update = true
 
   }
 
-  displayMessage(message: string){
-    let snackBarRef = this.snackBar.open(message, 'Close',{ duration: 3000})
+  refreshPage(){
+    
+    let events = [...this.localEvents]
+    this.localEvents.length = 0
+    setTimeout( ()=> Object.assign(this.localEvents, events), 100)
+  }
+
+  displayMessage(message: string, messageType: string){
+    let snackBarRef = this.snackBar.open(
+                        message, 'Close',
+                        { panelClass: messageType, duration: 3000, horizontalPosition: 'center', verticalPosition: 'top'}
+                      )
 
     //listen for close event
     snackBarRef.onAction().subscribe(() => {
@@ -496,10 +487,10 @@ export class CalendarComponent implements OnInit {
   }
 
 
-  async editEvents(newEvent: { title: string; }, isUpdate: boolean ){
-    this.displayMessage(`Checking for clahses with ${newEvent.title} ...`)
+  async editEvents(newEvent: { title: string, start: string, end:string }, isUpdate: boolean ){
+    this.displayMessage(`Checking for clahses with ${newEvent.title} ...`, 'info')
 
-        let eventOverlaps: {title: string, type: string}[] = [] //DialogData[] = []
+        let eventOverlaps: {title: string, type: string, createdBy:string}[] = [] //DialogData[] = []
         
 
         // this.localEvents.forEach( async(eventObj: any )=>{
@@ -518,20 +509,37 @@ export class CalendarComponent implements OnInit {
         //Prompt user if overlaps found, else add event or update if isUpdate
         let userresponse : boolean = true ;
         if( eventOverlaps.length > 0 ){
-          let dialogRef = this.promptDialog.open( PromptDialogComponent, {width: '50vw', data: eventOverlaps})
-          dialogRef.afterClosed().subscribe( (saveEvent : boolean) =>{
-            if( !saveEvent) this.displayMessage('Cancelling Update!')
-            else if(  !isUpdate && saveEvent )
+          let freeSlots = this.suggestFreeTimeSlot(newEvent)
+          console.log("Free Slots", freeSlots )
+
+          let dialogRef = this.promptDialog.open( PromptDialogComponent, {width: '50vw', data: freeSlots.start ? { events: eventOverlaps, freeSlots: freeSlots} : {events: eventOverlaps} })
+          dialogRef.afterClosed().subscribe( (eventResult : {save: boolean, start: string, end: string}) =>{
+            let updated = false // if the recommended dates were added
+            if(eventResult.start && eventResult.end){
+              //set new start & end dates
+              newEvent.start = eventResult.start
+              newEvent.end = eventResult.end
+              updated = true
+            }
+            if( !eventResult.save) {
+              this.displayMessage('Cancelling Update!', 'info')
+              this.refreshPage()
+            } 
+            else if(  !isUpdate && eventResult.save )
               this.writeEvent(newEvent)
-            else if ( isUpdate  && saveEvent)
+            else if ( isUpdate  && eventResult.save)
               this.updateEvent(newEvent)
             
-            //create notification if overlap 
-            if(saveEvent && eventOverlaps.length > 1){
+            //create notification if saved with overlapping dates 
+            if(eventResult.save && !updated && eventOverlaps.length > 1){
               let message = ''
               eventOverlaps.forEach( event => message+= `${event.title} (${event.type})`)
-              this.firebase.createNotification(this.currentUserId, newEvent.title, message)
-              
+              this.firebase.createNotification(this.currentUserId, newEvent.title, message).subscribe( {
+                next: response => this.displayMessage( response.message || response.error, 'success'),
+                error: errorMsg => this.displayMessage(errorMsg, 'error')
+              });
+
+              this.sendEmailsToOtherUsers(eventOverlaps)
               //check if overlaps for event eventOverlapping exceeds 3
             } 
           })//end of dialog subscribe
@@ -542,7 +550,7 @@ export class CalendarComponent implements OnInit {
             this.updateEvent(newEvent)
 
         else{
-          this.displayMessage('Cancelling')
+          this.displayMessage('Cancelling', 'info')
           
         }
   }
@@ -563,11 +571,14 @@ export class CalendarComponent implements OnInit {
       backgroundColor: event.backgroundColor,
       overlap: event.overlap,
       displayEventTime: true,
-      editable: true,
+      editable: false,
       extendedProps: event.extendedProps
     }
 
-    await this.editEvents( newEvent , true); //update = true
+    if( !this.isInSemesterSchedule(newEvent.start , newEvent.end, newEvent.extendedProps.eventType ))
+      this.refreshPage()
+    else
+      await this.editEvents( newEvent , true); //update = true
 
   }
 
@@ -581,6 +592,169 @@ export class CalendarComponent implements OnInit {
     console.log('Recieved: ', degree, ' & ', course)
     console.log('Requested: ', c)
     return this.degrees[`${degree}` ][`${course}`]
+  }
+
+  //check number of events <= the perdefined amt
+  courseAssessmentWithinLimit(course: string, assessmentType:string){
+    console.log("Running courseAssessmentWithinLimit for " + course)
+    let assessmentCount = 0
+
+    let courseData = this.courses[`${course}`]
+    console.log( courseData)
+    if( !courseData ) return false
+
+
+    for(let assessment of courseData.assessments){
+      // console.log(assessment)
+      if(assessment.type.toLowerCase() == assessmentType.toLowerCase())
+        assessmentCount+=1
+        
+    }
+
+    if( assessmentCount == 0 ){
+      this.displayMessage( `Invalid: ${course}'s assessment type, "${assessmentType}", does not exist.`, 'error')
+      return false
+    }
+    
+    for( let event of this.localEvents){
+      // console.log(event)
+      if( event.extendedProps.course == course && event.extendedProps.eventType.toLowerCase()== assessmentType.toLowerCase())
+        assessmentCount-=1
+    }
+    
+    // console.log( `Assessment Count ${assessmentCount}`)
+    if(  assessmentCount > 0 ){
+      //console.log("Returning true from courseAssessmentWithinLimit \n")
+      return true
+    }
+      
+    this.displayMessage( `Invalid: The # of ${assessmentType} for ${course} has been scheduled`, 'error')
+    return false
+  }
+
+  async sendEmailsToOtherUsers(eventOverlaps:{title: string, type: string, createdBy:string}[]){
+    console.log(" Running sendEmailsToOtherUsers fn...")
+    for( let event of eventOverlaps){
+      let message = ""
+      for ( let otherEvents of eventOverlaps)
+        if (otherEvents.title != event.title)
+          message += `${otherEvents.title} (${otherEvents.type})\n`
+      this.firebase.sendEmail(event.title, message, event.createdBy ).subscribe( {
+                                                                                  next: response => this.displayMessage(response.message || response.error, 'success'),
+                                                                                  error: errorMsg => this.displayMessage(errorMsg, 'error')
+                                                                                });
+    }
+  }
+
+  isInSemesterSchedule(start:string, end: string, assessmentType:string ){
+    console.log(" Running isInSemesterSchedule fn...")
+    
+    //if event is being secheduled before current Date
+    if( Date.parse(start) < Date.now() ){
+      this.displayMessage("Events can only be sechduled from Current Date!", 'error')
+      return false
+    }
+
+    let event = { start: Date.parse(`${start}`), end: Date.parse(`${end}`) }
+    //Get either the teaching or exam period for comparison
+    let schedulingPeriod = assessmentType.toLowerCase() == "assignment" ? { start: Date.parse(`${this.semesterSchedule.teaching.start}`), end: Date.parse(`${this.semesterSchedule.teaching.end}`) }
+                                                          : { start: Date.parse(`${this.semesterSchedule.exam.start}`), end: Date.parse(`${this.semesterSchedule.exam.end}`) }
+
+     //IF it's past the scheduling period
+    if( Date.now() >= schedulingPeriod.end && assessmentType.toLowerCase() =="assignment")
+      this.displayMessage("The period for scheduling Assignments has passed!\n Ask your admin to extend it! ", 'error')
+    else( Date.now() >= schedulingPeriod.end && assessmentType.toLowerCase() =="exam")
+      this.displayMessage("The period for scheduling Exams has passed!\n Ask your admin to extend it! ", 'error')
+
+    //between defined scheduling period: true
+    if ( event.start <= schedulingPeriod.end && event.end >= schedulingPeriod.start )
+      return true
+    
+    if( assessmentType.toLowerCase() =="assignment" )
+      this.displayMessage("Invalid Date Range for assignment/course work", 'error')
+    else
+      this.displayMessage("Invalid Date Range for exams", 'error')
+      return false
+  }
+
+  suggestFreeTimeSlot(newEvent: any){
+    //get the # of days for incoming event
+    let daysInBetween = Math.floor( ( Date.parse(newEvent.end) - Date.parse(newEvent.start) ) / 86400000 )//# of milliseconds in a day
+
+    //check if event is being scheduled in teaching period or exams
+    let isTeachingPeriod = Date.parse(newEvent.end) <= Date.parse(this.semesterSchedule.teaching.end) ? true : false
+    
+
+    //create an array to plot all current events
+    let daysWithinPeriod = new Array()
+    let period = { start : '', end: ''}
+    if ( isTeachingPeriod ){
+      console.log('\n\nIS TEACHING PERIOD')
+      period.start = this.semesterSchedule.teaching.start
+      period.end = this.semesterSchedule.teaching.end
+      //iterate through each and find n consecutive free slots
+
+    }//end of teachingPeriod check
+    else if ( !isTeachingPeriod ){
+      console.log('\n\nIS EXAM PERIOD')
+      period.start = this.semesterSchedule.exam.start
+      period.end = this.semesterSchedule.exam.end
+      //iterate through each and find n consecutive free slots
+
+    }
+    
+    var lastDate= new Date(period.end);
+    let hasEvents = false
+    let consecutiveDays = 0
+    let freeSlots = []
+    //console.log( "\n\nSearching for free timeslots "+ daysInBetween)
+    //Iterate between start & end Period 
+    for (var d = new Date(period.start); d <= lastDate; d.setDate(d.getDate() + 1)) {
+        for( let event of this.localEvents){
+          //for each event check keep count of # of events occuring on d( <=this date)
+          if( !this.isSameEvent(newEvent, event) && this.dateIsInBetweenRange( event.start, event.end, d.toJSON() ) && !hasEvents )
+            hasEvents = true
+          
+        }//end of events loop
+        
+        if( hasEvents ){
+          hasEvents = false 
+          consecutiveDays = 0
+        }
+        
+        else consecutiveDays +=1
+        if( consecutiveDays == daysInBetween){
+          hasEvents = false
+          consecutiveDays = 0
+          let date = d
+
+          date.setDate( date.getDate() )
+          const end = date.toJSON()
+
+          date.setDate( date.getDate() - daysInBetween)
+          const start = date.toJSON()
+          
+          return {start: start, end: end}
+        }
+        
+    }
+
+    return {}
+  }
+
+  dateIsInBetweenRange(start : string, end: string, date: string ) {
+    if( Date.parse(date)>= Date.parse(start) && Date.parse(date) <= Date.parse(end) )
+      return true
+    
+    //console.log(date, " is not in between ", start, " and ", end )
+    return false
+  }
+
+  isSameEvent(event1: any, event2:any){
+    if(event1.title== event2.title && event1.extendedProps.course == event2.extendedProps.course && event1.extendedProps.eventType==event2.extendedProps.eventType && event1.extendedProps.createdBy == event2.extendedProps.createdBy)
+    return true
+
+    return false
   }
 
 }
