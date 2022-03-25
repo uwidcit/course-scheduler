@@ -6,22 +6,47 @@
       <button mat-button (click)="onNoClick()"><mat-icon>close</mat-icon></button>
     </div>
     
-    <div mat-dialog-content>
-    <p>
-      <mat-form-field appearance="outline" fxFlex="35">
+    <div mat-dialog-content> 
+     <p> 
+      <mat-form-field *ngIf="!data.update" class="full-width" appearance="outline" fxFlex="35">
+        <mat-label>Course Code</mat-label>
+        <input placeholder="E.g. INFO1600" matInput type="text" [(ngModel)]="courseCode">
+        <button *ngIf="courseCode" matSuffix mat-icon-button aria-label="Clear" (click)="courseCode=''">
+        <mat-icon>close</mat-icon>
+        </button>
+        <mat-hint>E.g. INFO1600</mat-hint>
+      </mat-form-field>
+
+
+      <mat-form-field class="full-width" appearance="outline" fxFlex="35">
         <mat-label>Course Name</mat-label>
         <input placeholder="E.g. Intro to Web" matInput type="text" [(ngModel)]="name" cdkFocusInitial>
         <button *ngIf="name" matSuffix mat-icon-button aria-label="Clear" (click)="name=''">
-          <mat-icon>close</mat-icon>
+        <mat-icon>close</mat-icon>
         </button>
-        
         <mat-hint>E.g. Intro to Web</mat-hint>
       </mat-form-field>
-      
-      
     </p>
+    <p>
+        <mat-form-field appearance="outline" fxFlex="35">
+        <mat-label>Faculty</mat-label>
+        <input placeholder="E.g. FST" matInput type="text" [(ngModel)]="faculty">
+        <button *ngIf="faculty" matSuffix mat-icon-button aria-label="Clear" (click)="faculty=''">
+        <mat-icon>close</mat-icon>
+        </button>
+        <mat-hint>E.g. FST</mat-hint>
+      </mat-form-field>
+       <mat-form-field appearance="outline" fxFlex="35">
+        <mat-label>Campus</mat-label>
+        <input placeholder="E.g. sta" matInput type="text" [(ngModel)]="campus">
+        <button *ngIf="campus" matSuffix mat-icon-button aria-label="Clear" (click)="campus=''">
+        <mat-icon>close</mat-icon>
+        </button>
+        <mat-hint>E.g. sta</mat-hint>
+      </mat-form-field>
+     </p>
   
-    <mat-form-field class="Degree-chip-list" appearance="fill">
+     <!-- <mat-form-field class="Degree-chip-list" appearance="fill">
         <input
             placeholder="New Degrees..."
             #degreeInput
@@ -48,7 +73,8 @@
             {{degreeName}}
           </mat-option>
         </mat-autocomplete>
-      </mat-form-field>
+      </mat-form-field> -->
+    
 
       <!-- Table of Assessments -->
       <table>
@@ -78,7 +104,7 @@
                     <mat-form-field appearance="fill">
                         
                         <mat-label>Weighting</mat-label>
-                        <input min="1" max="100" matInput type="number" [(ngModel)]="weighting" cdkFocusInitial>
+                        <input min="1" max="100" matInput type="number" [(ngModel)]="weighting">
                       </mat-form-field>
                 </td>
                 <td (click)="addAssessment()">
@@ -97,7 +123,7 @@
                 </td>
             </tr>
         </tbody>
-    </table>
+     </table>
     
     </div>
     <div mat-dialog-actions>

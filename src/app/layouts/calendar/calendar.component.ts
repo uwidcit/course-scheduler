@@ -199,7 +199,8 @@ export class CalendarComponent implements OnInit {
     dialogRef.afterClosed().subscribe( async( result) => {
       console.log('The dialog was closed');
       console.log(`Dialog Result: ${JSON.stringify(result)}`)
-      //this.title = result.title;
+      
+      
       if( result !=null && result.delete){
         let eventTitle = result.title
         this.firebase.deleteEvent(result.id)
@@ -218,8 +219,11 @@ export class CalendarComponent implements OnInit {
           editable: false,
           extendedProps: result.extendedProps
         }
+
+        //Determine if the newEvent has the same course
+        let updatingSameCourse = arg.extendedProps && arg.extendedProps.course == newEvent.extendedProps.course ? true : false
         
-        if ( this.courseAssessmentWithinLimit( newEvent.extendedProps.course, newEvent.extendedProps.eventType)  && this.isInSemesterSchedule(newEvent.start , newEvent.end, newEvent.extendedProps.eventType ))
+        if ( this.courseAssessmentWithinLimit( newEvent.extendedProps.course, newEvent.extendedProps.eventType, updatingSameCourse)  && this.isInSemesterSchedule(newEvent.start , newEvent.end, newEvent.extendedProps.eventType ))
           await this.editEvents( newEvent , result.update)
          
       }
@@ -595,10 +599,11 @@ export class CalendarComponent implements OnInit {
   }
 
   //check number of events <= the perdefined amt
-  courseAssessmentWithinLimit(course: string, assessmentType:string){
+  courseAssessmentWithinLimit(course: string, assessmentType:string, updatingSameCourse: boolean){
     console.log("Running courseAssessmentWithinLimit for " + course)
+    if (updatingSameCourse) return true
     let assessmentCount = 0
-
+    
     let courseData = this.courses[`${course}`]
     console.log( courseData)
     if( !courseData ) return false
@@ -689,53 +694,60 @@ export class CalendarComponent implements OnInit {
     let daysWithinPeriod = new Array()
     let period = { start : '', end: ''}
     if ( isTeachingPeriod ){
-      console.log('\n\nIS TEACHING PERIOD')
+      console.log('\n\nIS TEACHING PERIOD with ', daysInBetween, ' days')
       period.start = this.semesterSchedule.teaching.start
       period.end = this.semesterSchedule.teaching.end
       //iterate through each and find n consecutive free slots
 
     }//end of teachingPeriod check
     else if ( !isTeachingPeriod ){
-      console.log('\n\nIS EXAM PERIOD')
+      console.log('\n\nIS EXAM PERIOD ', daysInBetween, ' days')
       period.start = this.semesterSchedule.exam.start
       period.end = this.semesterSchedule.exam.end
       //iterate through each and find n consecutive free slots
 
     }
     
+    const startingDate = Date.parse(period.start) < Date.now() ? new Date() : new Date(Date.parse(period.start))
     var lastDate= new Date(period.end);
     let hasEvents = false
     let consecutiveDays = 0
     let freeSlots = []
     //console.log( "\n\nSearching for free timeslots "+ daysInBetween)
-    //Iterate between start & end Period 
-    for (var d = new Date(period.start); d <= lastDate; d.setDate(d.getDate() + 1)) {
+    //Iterate between start/current Date (which ever is latest) & end Period 
+    
+    for (var d = startingDate; d <= lastDate; d.setDate(d.getDate() + 1)) {
+      if( consecutiveDays == daysInBetween){
+        hasEvents = false
+        consecutiveDays = 0
+        let date = d
+
+        
+        //date.setDate( date.getDate() )
+        const start = date.toJSON()
+        let newDay =  date.setDate( date.getDate() + daysInBetween )
+        
+        const end = new Date(newDay).toJSON()
+        console.log(`NEW END : ${end}`)
+        return {start: start, end: end}
+      }
+      
+      //reset the has events
+      else if( hasEvents ){
+        hasEvents = false 
+        consecutiveDays = 0
+      }
+      
+      else consecutiveDays +=1
+
         for( let event of this.localEvents){
           //for each event check keep count of # of events occuring on d( <=this date)
-          if( !this.isSameEvent(newEvent, event) && this.dateIsInBetweenRange( event.start, event.end, d.toJSON() ) && !hasEvents )
+          if( !this.isSameEvent(newEvent, event) && this.dateIsInBetweenRange( event.start, event.end, d.toJSON() ) )
             hasEvents = true
           
         }//end of events loop
         
-        if( hasEvents ){
-          hasEvents = false 
-          consecutiveDays = 0
-        }
         
-        else consecutiveDays +=1
-        if( consecutiveDays == daysInBetween){
-          hasEvents = false
-          consecutiveDays = 0
-          let date = d
-
-          date.setDate( date.getDate() )
-          const end = date.toJSON()
-
-          date.setDate( date.getDate() - daysInBetween)
-          const start = date.toJSON()
-          
-          return {start: start, end: end}
-        }
         
     }
 

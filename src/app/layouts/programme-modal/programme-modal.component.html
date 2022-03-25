@@ -1,24 +1,24 @@
 <!-- <div id="modal_main" > -->
     <div mat-dialog-title id="header">
       <h1 mat-dialog-title *ngIf="!data.update" >New Programme</h1>
-      <h3 mat-dialog-title *ngIf="data.update" >Updating "{{ data.degreee.name }}" Programme</h3>
+      <h3 mat-dialog-title *ngIf="data.update" >Updating "{{ data.degree.name }}" Programme</h3>
       <div class="spacer" ></div>
       <button mat-button (click)="onNoClick()"><mat-icon>close</mat-icon></button>
     </div>
     
     <div mat-dialog-content>
     <p>
-      <mat-form-field appearance="outline" fxFlex="35">
+      <mat-form-field *ngIf="!data.update" appearance="outline" fxFlex="35">
         <mat-label>Programme Name</mat-label>
-        <input placeholder="Bsc in Computer Science" matInput type="text" [(ngModel)]="name" cdkFocusInitial>
-        <button *ngIf="name" matSuffix mat-icon-button aria-label="Clear" (click)="name=''">
+        <input placeholder="Bsc in Computer Science" matInput type="text" [(ngModel)]="name" cdkFocusInitial [disabled]="data.update">
+        <button *ngIf="name && !data.update" matSuffix mat-icon-button aria-label="Clear" (click)="name=''">
           <mat-icon>close</mat-icon>
         </button>
         
         <mat-hint>E.g Bsc in Computer Science</mat-hint>
       </mat-form-field>
       
-      
+      <!-- <span *ngIf="data.update">{{name}}</span>  -->
     </p>
   
     <table>

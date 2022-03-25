@@ -41,7 +41,7 @@
 
     <table>
         <tr>
-            <th colspan="2"> <div class="headingIcon"><mat-icon (click)="openDialog( true )" matSuffix>mode_edit</mat-icon> <mat-icon (click)="deleteCourse()" style="margin-left: 5px;" matSuffix>delete</mat-icon></div> </th>
+            <th colspan="2"> <div class="headingIcon"><mat-icon (click)="openDialog(true)" matSuffix>mode_edit</mat-icon> <mat-icon (click)="deleteCourse()" style="margin-left: 5px;" matSuffix>delete</mat-icon></div> </th>
         </tr>
         <tr>
             <th colspan="1"><div class="headings">Course Name</div></th>
@@ -52,14 +52,21 @@
             <th colspan="1"><div class="headings">Faculty</div></th>
             <td>{{currentCourse.faculty}}</td>
         </tr>
+
+        <tr>
+            <th colspan="1"><div class="headings">Campus</div></th>
+            <td>{{currentCourse.campus}}</td>
+        </tr>
           
         <tr>
             <th colspan="1"><div class="headings">Associated Degrees</div></th>
             <!-- <td>{{currentCourse.degrees}}</td> -->
             <td>
-                <mat-chip-list>
+                <mat-chip-list *ngIf="currentCourse.degrees">
                     <mat-chip *ngFor="let degree of currentCourse.degrees">{{degree}}</mat-chip>
                 </mat-chip-list>
+                <!-- {{ currentCourse.degrees| json}} -->
+                <p *ngIf="!currentCourse.degrees"> Add course to Degrees from Programmes View</p>
             </td>
         </tr>
         <tr>

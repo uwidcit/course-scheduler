@@ -5,6 +5,7 @@ import { initializeApp } from 'firebase/app';
 import { getAnalytics } from "firebase/analytics";
 import { DatabaseReference, getDatabase, onValue, ref, remove, set } from "firebase/database";
 import { environment } from 'src/environments/environment';
+import { update } from 'lodash';
 
 @Injectable({
   providedIn: 'root'
@@ -41,6 +42,35 @@ export class FirebaseDBServiceService {
       });
       return result
   }
+
+  async updateDegreeCourse( degree : string ,name : string, coursedata: any){
+    const tablesRef = ref(this.dbRef, `coursesPerProgramme/${degree}/${name}` );
+    let result;
+
+    try {
+       set(tablesRef,coursedata)
+      return true
+
+    } catch (error) {
+      console.log(error)
+      return false;
+
+    }
+
+}
+
+  async updateCourse(courseData:any, coursecode: string) {
+      const pathRef = ref(this.dbRef, `courses/${coursecode}`)
+
+      try {
+        set(pathRef,courseData)
+        return true
+      } catch (error) {
+        console.log(error)
+        return false;
+      }
+  }
+
 
   async getCourseDegrees( courseName: string){
     const tableRef = ref(this.dbRef, `courses/${courseName}/degrees`)
@@ -86,6 +116,12 @@ export class FirebaseDBServiceService {
 
   deleteProgramme( programmeId: string){
     const tableRef = ref( this.dbRef, `coursesPerProgramme/${programmeId}`)
+
+    remove(tableRef)
+  }
+
+  deleteCourse( courseCode: string){
+    const tableRef = ref( this.dbRef, `courses/${courseCode}`)
 
     remove(tableRef)
   }

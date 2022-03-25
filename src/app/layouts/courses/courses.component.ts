@@ -3,6 +3,7 @@ import { onValue, ref } from 'firebase/database';
 import { MatDialog } from '@angular/material/dialog';
 import { FirebaseDBServiceService } from 'src/app/services/firebase-dbservice.service';
 import { CourseModalComponent } from '../courses-modal/course-modal.component';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 //import { forEach,sum} from 'lodash';
 
@@ -20,14 +21,16 @@ export class CoursesComponent implements OnInit {
   filterTerm: string = ''
 
 
-  constructor(private firebase:FirebaseDBServiceService,  public dialog: MatDialog) { 
+  constructor(private firebase:FirebaseDBServiceService,  public dialog: MatDialog, private snackbar: MatSnackBar) { 
    
    
     const tableRef = ref( this.firebase.dbRef,'courses');
     onValue(tableRef, (snapshot)=>{
       const data = snapshot.val();
 
-      if( !data ) this.filteredCourse.length = 0
+      if( !data ) return
+      
+      this.filteredCourse.length = 0
       
       //iterate JSON object as an array
       Object.entries(data).forEach( (entry: any)=>{
@@ -38,10 +41,14 @@ export class CoursesComponent implements OnInit {
           let course: any = {courseName: coursesName, faculty: coursesInfo.faculty, campus: coursesInfo.campus, degrees: coursesInfo.degrees, assessments: coursesInfo.assessments, name: coursesInfo.name}
           console.log("New Course: ",  course)
           //this.courseList.push(course)
+      
           this.filteredCourse.push(course)
-          //console.log(this.courseList)
-
+          //console.log(this.courseList)  
       });
+      
+      if(this.currIndex!= -1){
+        this.currentCourse = this.filteredCourse[this.currIndex];
+      }
       
       //Object.assign(this.filteredCourse, this.courseList)
       console.log( 'Course LiSt ',  this.filteredCourse)
@@ -62,23 +69,34 @@ export class CoursesComponent implements OnInit {
   }
 
   deleteCourse(){
-    this.firebase.deleteProgramme(`${this.currentCourse?.name}`)
+    this.firebase.deleteCourse(`${this.currentCourse.courseName}`)
   }
 
   openDialog(update: boolean){
 
-    let data: any
+    let data: any = {update: update}
     if(update)
-      data = {update:update, course: this.currentCourse}
-    else  
-      data = {update: update}
-    let dialog = this.dialog.open(CourseModalComponent, {
-      data: data,
-      width: '96vw',
-      height: '90vh'
-    })
-
+      data.course = JSON.parse(JSON.stringify(this.currentCourse))
     
+      let dialogRef = this.dialog.open(CourseModalComponent, {
+        data: data,
+        width: '96vw',
+        height: '90vh'
+      })
+  
+      dialogRef.afterClosed().subscribe((response)=>{
+        console.log("\n\nREUTRNED FROM COURSE MODAL: ", response)
+        if( response )
+          this.displayMessage( 'Course Updated!', 'info')
+      })
+  }
+
+  displayMessage(message: string, messageType:string){
+    let snackBarRef = this.snackbar.open( message, 'close', {duration: 1000, panelClass: messageType})
+
+    snackBarRef.onAction().subscribe(()=>{
+      snackBarRef.dismiss()
+    })
   }
 
 }

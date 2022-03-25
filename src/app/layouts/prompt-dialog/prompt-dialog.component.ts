@@ -45,7 +45,8 @@ export class PromptDialogComponent implements OnInit {
   constructor(public dialogRef: MatDialogRef<PromptDialogComponent>, @Inject(MAT_DIALOG_DATA) public data: any ) { }
 
   toDate(startDate: string, endDate: string){
-    return new Date(startDate).toDateString() + new Date(endDate).toDateString()
+    let text = `${new Date(startDate).toUTCString()} - ${new Date(endDate).toUTCString()}`
+    return text.replace(/\sGMT/g, '') 
   }
 
   ngOnInit(): void {
