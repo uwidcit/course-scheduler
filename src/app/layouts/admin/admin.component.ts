@@ -52,8 +52,13 @@ export function matchingPasswordsValidator(): ValidatorFn{
 
 export class AdminComponent implements OnInit {
   // Set up for Angular Material table 
-  displayedColumns : string[] = ['position','name','email','account_type']
+  displayedColumns : string[] = [ 'edit' ,'position','name','email','account_type', 'delete']
   columns = [
+    {
+      columnDef: 'edit', //key in json
+      header: '', //display feild on table header
+      cell: (element: PeriodicElement) => ``, // data displayed in table cell
+    },
     {
       columnDef: 'position', //key in json
       header: 'No.', //display feild on table header
@@ -74,10 +79,17 @@ export class AdminComponent implements OnInit {
       header: 'Account Type',
       cell: (element: PeriodicElement) => `${element.account_type}`,
     },
+    {
+      columnDef: 'delete', //key in json
+      header: '', //display feild on table header
+      cell: (element: PeriodicElement) => ``, // data displayed in table cell
+    },
   ];
  
   
-
+  random='YOU GOT JERRY!'
+  isEdit = false
+  editingUser: any 
 
   //Forms Data
   currentView = "userData";
@@ -241,6 +253,23 @@ export class AdminComponent implements OnInit {
         //this.authService.
       }
     }
+  }
+
+  getUserToBeEdited(userData: {userIdentifier:string, account_type:string, email:string, name:string, position: number}){
+    this.editingUser=userData  //save reference for user to be edited
+    this.isEdit = true
+    //change current view
+    this.currentView='add'
+    //set form inputs to value of editing user
+
+  }
+
+  getUserToBeDeleted(userData: {userIdentifier:string, account_type:string, email:string, name:string, position: number}){
+     
+
+    //change current view
+    this.currentView='delete'
+    //set form inputs to value of user to be delete
   }
 
   // selectDegree( index : number ){

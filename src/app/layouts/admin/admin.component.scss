@@ -1,4 +1,25 @@
 
+.main{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-items: center;
+    max-height: 92vh;
+    max-width: 100vw;
+    overflow-y: auto;
+}
+
 .userListTable{
+    width: 90%;
+    max-width: 90% !important;
+    padding: 10px;
+}
+
+.sub_header{
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
     width: 100%;
+    padding-right: 5vw;
+    margin-bottom: 10px;
 }
