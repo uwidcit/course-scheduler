@@ -32,6 +32,14 @@ export class FirebaseDBServiceService {
     
   //}
 
+   isAdmin(currentUserId: string){
+    let request = {
+      currentUser: currentUserId
+    }
+    let url = environment.backendURL + "/type/user" //
+    return this.http.post<{result:boolean, error:string}>( url, request)
+  }
+
   async getDegreeCourse( degree : string ,name : string){
       const tablesRef = ref(this.dbRef, `coursesPerProgramme/${degree}/${name}` );
       let result;
@@ -141,6 +149,24 @@ export class FirebaseDBServiceService {
    
   }
 
+  editUser( userInfo:{userIdentifier: string,account_type:string, email:string, name:string, password:string } , currentUserId: string){
+    //const tableRef = ref( this.dbRef, `users/${userId}`)
+    
+    //remove(tableRef)
+    let request = {
+      "currentUser" : currentUserId,
+      "userData" : {
+          "userToUpdate" : userInfo.userIdentifier,
+          "email" : userInfo.email,
+          "name" : userInfo.name,
+          "password" : userInfo.password,
+          "account_type" : userInfo.account_type
+      }
+  }
+    let url = environment.backendURL + "/edit/user" //
+    return this.http.post<{message:string, error:string}>( url, request)
+   
+  }
 
   getUserNotifications(tableRef: DatabaseReference){
     let result ;

@@ -89,6 +89,7 @@ import { onValue, ref } from 'firebase/database';
 })
 export class FullComponent implements OnDestroy {
 	currentUser: any 
+	isAdmin : boolean = false
 	unreadNotifications: boolean = false; 
 	notifications: any = [] ;
 
@@ -134,6 +135,13 @@ export class FullComponent implements OnDestroy {
 
 		if (this.auth.loggedIn){
 			this.currentUser = this.auth.currentUser?.uid 
+			//check if the current user is an admin
+			this.firebase.isAdmin(this.currentUser).subscribe((response)=>{
+				if(response.result)
+					this.isAdmin = response.result
+				// else if(response.error)
+				// 	console.log(response.error)
+			})
 			console.log(this.currentUser)
 		}
 		else{
