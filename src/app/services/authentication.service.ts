@@ -6,6 +6,7 @@ import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfi
 import { from } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
+import { FirebaseDBServiceService } from './firebase-dbservice.service';
 
 @Injectable({
   providedIn: 'root'
@@ -15,10 +16,11 @@ export class AuthenticationService{
     
   //currentUser$ = authState(this.auth);
   currentUser: User | null;
+  isAdmin = false
   userCopy:User | null;
   loggedIn :boolean = this.auth.currentUser ? true : false ; 
 
-  constructor(private auth: Auth) {
+  constructor(private auth: Auth, private firebase: FirebaseDBServiceService) {
       this.currentUser= this.auth.currentUser
       this.userCopy = this.currentUser
       this.auth.onAuthStateChanged( (user)=>{
@@ -26,11 +28,23 @@ export class AuthenticationService{
         if( user || this.loggedIn){
             this.loggedIn = true
             this.currentUser = user || this.userCopy
+            //check if current User is admin
+            if(this.currentUser?.uid)
+              this.firebase.isAdmin(this.currentUser?.uid).subscribe((response)=>{
+                if(response.result)
+                  this.isAdmin = response.result
+                else if(response.error)
+                 console.log(response.error)
+                
+              });
         }
         else{
             this.loggedIn = false;
         }
       });
+
+      
+
    }
 
    

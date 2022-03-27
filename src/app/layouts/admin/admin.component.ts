@@ -122,20 +122,22 @@ export class AdminComponent implements OnInit {
   constructor(private authService: AuthenticationService, private toast: HotToastService, private auth:Auth,
     private firebase:FirebaseDBServiceService, private router: Router) {
     this.currentUser = this.auth.currentUser;
-    if (this.currentUser){
+    if (this.currentUser && this.authService.isAdmin){
 			
 			//check if the current user is an admin
-			this.firebase.isAdmin(this.currentUser).subscribe((response)=>{
-				if(response.result)
-					this.isAdmin = response.result
-				else if(response.error)
-				 console.log(response.error)
+      
+			// this.firebase.isAdmin(this.currentUser).subscribe((response)=>{
+			// 	if(response.result)
+			// 		this.isAdmin = response.result
+			// 	else if(response.error)
+			// 	 console.log(response.error)
         
-        if(!this.isAdmin) this.router.navigate(['login']);
-			})
+      //   if(!this.isAdmin) this.router.navigate(['login']);
+			// })
 			
 		}
 		else{
+      this.toast.error('You are unauthorized to access the Admin view.')
 			this.router.navigate(['login']);
 		}
     const list: any[] = []
