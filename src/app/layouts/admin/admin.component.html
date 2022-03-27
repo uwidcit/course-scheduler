@@ -1,25 +1,29 @@
 <style>
-    
+    .horizontalContainer{
+        width:1600px;
+        height:600px;
+        margin:10px;
+        border: 1px solid #555;
+    }
+
     .button {
       border: none;
       color: white;
       background-color: #00a7df;
       padding: 15px 32px;
-      text-align: center;
       text-decoration: none;
-      display: inline-block;
       font-size: 16px;
       margin: 4px 2px;
       cursor: pointer;
       transition-duration: 0.2s;
     }
     .button1 {
-        margin-left: 47%;
+        margin-left: 37%;
     }
 
     .button:hover {
-    background-color: #28748d;
-    color: white;
+        background-color: #28748d;
+        color: white;
     }
 
     .forms_class{
@@ -31,14 +35,14 @@
         display: inline-block;
     }
     .margin{
-        margin-left: 33%;
+        margin-left: 50px;
         width:40%;
-        max-height: 150px;
+        max-height: 75%;
         overflow: auto;
     }
     .welcome{
+        margin: 0 0 30px;
         padding:15px;
-        text-align:center;
         background-size: 40%;
         background-color: #00a7df;
         color: white;
@@ -51,6 +55,36 @@
     .hide1{
         display:none;
     }
+
+    .summary{
+        padding:5px;
+        cursor: pointer;
+        list-style-type: none;
+        min-height: 40px;
+        text-align: center;
+        /* background-color: #00a7df;
+        color: white; */
+    }
+
+    details summary > * {
+    display: inline;
+    }
+
+    details > summary {
+        border: 2px solid white;
+        background-color: #02a3d8 ;
+        cursor: pointer;
+        /* padding: .5rem 1rem; */
+    }
+    details > h3 {
+        border: 2px solid #00a7df;
+        margin-top: 0;
+        padding: 1rem;
+    }
+
+    #userList{
+        margin-left: 100px;
+    }
     </style>
 
 
@@ -58,104 +92,120 @@
 
 
 <main class="main">
-<h2 style="text-align:center;">User List</h2>
-<div *ngIf="listUsers.length > 0;">
-<ul class="margin">
-    <li *ngFor="let user of listUsers" style="list-style-type:none;">
-      <span>Email: {{user.email}} <br> Account Type: {{user.account_type}} <br><br>  </span>
-      <!-- <span>Account Type: {{user.account_type}}</span> -->
-    </li>
-  </ul>
-</div>
-<!--<div>
-        
-    <div *ngIf="usersList.length > 0 then list"> </div>
-</div>-->
-<!-- <p class="center">Select an action:</p>
-<div class="center">
-    <input type="radio" id="create" name="drone" value="cre"
-           checked>
-    <label for="cre">Add User</label>
-  </div>
+    <div class="sub_header">
+        <button class="button button1" *ngIf="currentView!='add'" (click)="showAddForm()">Toggle Add User</button>
+      <button class="button" *ngIf="currentView!='delete'" (click)="showDeleteForm()">Toggle Delete User</button>
+      <button class="button " *ngIf="currentView!='userData'" (click)="currentView='userData'">Toggle User List</button>
+    </div>
+    <table *ngIf="currentView=='userData'" mat-table [dataSource]="dataSource" class="mat-elevation-z8 demo-table userListTable">
+        <!-- Edit Icons Column -->
+        <!-- <ng-container matColumnDef="edit">
+            <th mat-header-cell *matHeaderCellDef> </th>
+            <td mat-cell *matCellDef="let element"> <mat-icon> edit</mat-icon> </td>
+        </ng-container> -->
+        <ng-container *ngFor="let column of columns" [matColumnDef]="column.columnDef">
+          <th mat-header-cell *matHeaderCellDef>
+            {{column.header}}
+          </th>
+          <td mat-cell  *matCellDef="let row">
+            
+            <span  *ngIf="column.columnDef!='edit' && column.columnDef!='delete'"> {{column.cell(row)}}</span>
+            <span  *ngIf="column.columnDef=='edit'" (click)="getUserToBeEdited(row)"> <mat-icon> edit</mat-icon> </span>
+            <span  *ngIf="column.columnDef=='delete'" (click)="getUserToBeDeleted(row)"> <mat-icon> delete</mat-icon> </span>
+          </td>
+          
+        </ng-container>
+      
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+
+      
+      
+
   
-  <div class="center">
-    <input type="radio" id="delete" name="drone" value="del">
-    <label for="del">Delete User</label>
-  </div> -->
+    <!-- add forms -->
+    <div  id="signUpForm" *ngIf="currentView=='add'">
+        <h2 style="text-align:center; " *ngIf="currentView=='add' && !isEdit">Add a New User</h2>
+        <h2 style="text-align:center; " *ngIf="currentView=='add' && isEdit">Update User</h2>
+        <form [formGroup]="addForm" (ngSubmit)="addSubmit()">
+      
+          <mat-form-field class = "forms_class">
+              <input matInput placeholder="Name" formControlName="name"/>
+              <mat-error *ngIf="name?.errors?.['required']">
+                  A Name is Required.
+              </mat-error>
+          </mat-form-field>
+          <mat-form-field class = "forms_class">
+              <input matInput placeholder="Email Address" formControlName="emailAddress"/>
+              <mat-error *ngIf="emailAddress?.errors?.['required']">
+                  Email Address is Required.
+              </mat-error>
+          </mat-form-field>
+          <mat-form-field class = "forms_class">
+              <mat-label>User Type: {{selectedType}}</mat-label>
+              <mat-select formControlName="typeControl" name="type" [(value)] = "selectedType" (change)="console.log(selectedType)">
+                <mat-option *ngFor="let type of types" [value]="type.value">
+                  {{type.viewValue}}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+            <!-- <p>Selected: {{typeControl.value}}</p> -->
+          <!-- <mat-form-field class = "forms_class">
+              <mat-label>User Type</mat-label>
+              <mat-select>
+                <mat-option *ngFor="let type of types" [value]="types.value">
+                  {{type.viewValue}}
+                </mat-option>
+              </mat-select>
+            </mat-form-field> -->
+          <mat-form-field class = "forms_class">
+              <input matInput placeholder="Password" formControlName="password" type="password"/>
+              <mat-error *ngIf="password?.errors?.['required']">
+                  A Password is Required.
+              </mat-error>
+          </mat-form-field>
+          <mat-form-field class = "forms_class">
+              <input matInput placeholder=" Confirm Password" formControlName="confirmPassword" type="password"/>
+              <mat-error *ngIf="confirmPassword?.errors?.['required']">
+                  Password Confirmation is Required.
+              </mat-error>
+          </mat-form-field>
+          <mat-error *ngIf="addForm.errors?.['thePasswordsDontMatch']">
+              The passwords do not match.
+          </mat-error>
+      
+      
+          <button class="button" style="margin-left: 47%;" type="submit">Add User</button>
+          </form>
+      </div>
+      
+          <h2 style="text-align:center;" *ngIf="currentView=='delete'">Delete User</h2>
+      
+          <!--<form [formGroup]="deleteForm" (ngSubmit)="deleteUser()">
+              <mat-form-field class = "forms_class">
+                  <input matInput placeholder="Email Address" formControlName="emailAddress2"/>
+                  <mat-error *nglf="emailAddress2?.errors?.['required']">
+                      Email Address is Required.
+                  </mat-error>
+              </mat-form-field>
+      
+          </form>-->
 
-  <button class="button button1" (click)="currentView='add'">Toggle Add User</button>
-  <button class="button" (click)="currentView='delete'">Toggle Delete User</button>
-<h2 style="text-align:center;">Add a New User</h2>
-<!--<p>admin works!</p>-->
+         
+          <!--  -->
+            <form style="width:90vw">
+              <mat-form-field *ngIf="currentView=='delete'" class="forms_class" id="deleteUserForm">
+                  <input matInput placeholder="Email Address" [(value)]="deleteEmail" type="email"required/>
+              </mat-form-field>
 
-<div  id="signUpForm" *ngIf="currentView=='add'">
-  <form [formGroup]="addForm" (ngSubmit)="addSubmit()">
-
-    <mat-form-field class = "forms_class">
-        <input matInput placeholder="Name" formControlName="name"/>
-        <mat-error *nglf="name?.errors?.['required']">
-            A Name is Required.
-        </mat-error>
-    </mat-form-field>
-    <mat-form-field class = "forms_class">
-        <input matInput placeholder="Email Address" formControlName="emailAddress"/>
-        <mat-error *nglf="emailAddress?.errors?.['required']">
-            Email Address is Required.
-        </mat-error>
-    </mat-form-field>
-    <mat-form-field class = "forms_class">
-        <input matInput placeholder="Password" formControlName="password" type="password"/>
-        <mat-error *nglf="password?.errors?.['required']">
-            A Password is Required.
-        </mat-error>
-    </mat-form-field>
-    <mat-form-field class = "forms_class">
-        <input matInput placeholder=" Confirm Password" formControlName="confirmPassword" type="password"/>
-        <mat-error *nglf="confirmPassword?.errors?.['required']">
-            Password Confirmation is Required.
-        </mat-error>
-    </mat-form-field>
-    <mat-error *ngIf="addForm.errors?.['thePasswordsDontMatch']">
-        The passwords do not match.
-    </mat-error>
-
-
-    <button class="button button1" type="submit">Add User</button>
-    </form>
-</div>
-
-    <h2 style="text-align:center;">Delete User</h2>
-
-    <!--<form [formGroup]="deleteForm" (ngSubmit)="deleteUser()">
-        <mat-form-field class = "forms_class">
-            <input matInput placeholder="Email Address" formControlName="emailAddress2"/>
-            <mat-error *nglf="emailAddress2?.errors?.['required']">
-                Email Address is Required.
-            </mat-error>
-        </mat-form-field>
-
-    </form>-->
+              <button *ngIf="currentView=='delete'" class="button" style="margin-left: 47%;" (click)="deleteUser()">Delete User</button>
+            </form>
+          
     
-        <mat-form-field *ngIf="currentView=='delete'" class = "forms_class" id="deleteUserForm">
-            <input matInput placeholder="Email Address" [(ngModel)]="deleteEmail" type="email"required/>
-        </mat-form-field>
-
-    
-    <button *ngIf="currentView=='delete'" class="button" style="margin-left: 47%;" (click)="deleteUser()">Delete User</button>
-
-    <script>
-        function displaySignUp(){
-            var toggle = document.getElementById("signUpForm");
-            if (toggle.style.display === "none"){
-                toggle.style.display = "block";
-            }
-            else{
-                toggle.style.display = "none";
-            }
-        }
-    </script>
 
 </main>
+
 
 
 

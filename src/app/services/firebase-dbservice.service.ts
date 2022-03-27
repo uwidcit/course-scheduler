@@ -5,7 +5,7 @@ import { initializeApp } from 'firebase/app';
 import { getAnalytics } from "firebase/analytics";
 import { DatabaseReference, getDatabase, onValue, ref, remove, set } from "firebase/database";
 import { environment } from 'src/environments/environment';
-import { update } from 'lodash';
+
 
 @Injectable({
   providedIn: 'root'
@@ -126,10 +126,18 @@ export class FirebaseDBServiceService {
     remove(tableRef)
   }
 
-  deleteUser( userId: string){
-    const tableRef = ref( this.dbRef, `users/${userId}`)
+  
+  deleteUser( userId: string, currentUserId: string){
+    //const tableRef = ref( this.dbRef, `users/${userId}`)
 
-    remove(tableRef)
+    //remove(tableRef)
+    let request = {
+      currentUser: currentUserId,
+      userToDelete: userId
+      
+    }
+    let url = environment.backendURL + "/delete/user" //
+    return this.http.post<{message:string, error:string}>( url, request)
    
   }
 
