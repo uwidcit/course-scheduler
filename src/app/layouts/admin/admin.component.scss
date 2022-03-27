@@ -23,3 +23,11 @@
     padding-right: 5vw;
     margin-bottom: 10px;
 }
+
+mat-icon:hover{
+    cursor: pointer;
+}
+
+mat-form-field > input {
+    width: 100%;
+}

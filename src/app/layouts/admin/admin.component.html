@@ -93,9 +93,9 @@
 
 <main class="main">
     <div class="sub_header">
-        <button class="button button1" *ngIf="currentView!='add'" (click)="currentView='add'">Toggle Add User</button>
-      <button class="button" *ngIf="currentView!='delete'" (click)="currentView='delete'">Toggle Delete User</button>
-      <button class="button" *ngIf="currentView!='userData'" (click)="currentView='userData'">Toggle User List</button>
+        <button class="button button1" *ngIf="currentView!='add'" (click)="showAddForm()">Toggle Add User</button>
+      <button class="button" *ngIf="currentView!='delete'" (click)="showDeleteForm()">Toggle Delete User</button>
+      <button class="button " *ngIf="currentView!='userData'" (click)="currentView='userData'">Toggle User List</button>
     </div>
     <table *ngIf="currentView=='userData'" mat-table [dataSource]="dataSource" class="mat-elevation-z8 demo-table userListTable">
         <!-- Edit Icons Column -->
@@ -132,19 +132,19 @@
       
           <mat-form-field class = "forms_class">
               <input matInput placeholder="Name" formControlName="name"/>
-              <mat-error *nglf="name?.errors?.['required']">
+              <mat-error *ngIf="name?.errors?.['required']">
                   A Name is Required.
               </mat-error>
           </mat-form-field>
           <mat-form-field class = "forms_class">
               <input matInput placeholder="Email Address" formControlName="emailAddress"/>
-              <mat-error *nglf="emailAddress?.errors?.['required']">
+              <mat-error *ngIf="emailAddress?.errors?.['required']">
                   Email Address is Required.
               </mat-error>
           </mat-form-field>
           <mat-form-field class = "forms_class">
               <mat-label>User Type: {{selectedType}}</mat-label>
-              <mat-select [formControl]="typeControl" name="type" [(value)] = "selectedType" (change)="console.log(selectedType)">
+              <mat-select formControlName="typeControl" name="type" [(value)] = "selectedType" (change)="console.log(selectedType)">
                 <mat-option *ngFor="let type of types" [value]="type.value">
                   {{type.viewValue}}
                 </mat-option>
@@ -161,13 +161,13 @@
             </mat-form-field> -->
           <mat-form-field class = "forms_class">
               <input matInput placeholder="Password" formControlName="password" type="password"/>
-              <mat-error *nglf="password?.errors?.['required']">
+              <mat-error *ngIf="password?.errors?.['required']">
                   A Password is Required.
               </mat-error>
           </mat-form-field>
           <mat-form-field class = "forms_class">
               <input matInput placeholder=" Confirm Password" formControlName="confirmPassword" type="password"/>
-              <mat-error *nglf="confirmPassword?.errors?.['required']">
+              <mat-error *ngIf="confirmPassword?.errors?.['required']">
                   Password Confirmation is Required.
               </mat-error>
           </mat-form-field>
@@ -194,13 +194,13 @@
 
          
           <!--  -->
-          
-              <mat-form-field *ngIf="currentView=='delete'" class = "forms_class" id="deleteUserForm">
-                  <input matInput placeholder="Email Address" [(ngModel)]="deleteEmail" type="email"required/>
+            <form style="width:90vw">
+              <mat-form-field *ngIf="currentView=='delete'" class="forms_class" id="deleteUserForm">
+                  <input matInput placeholder="Email Address" [(value)]="deleteEmail" type="email"required/>
               </mat-form-field>
 
               <button *ngIf="currentView=='delete'" class="button" style="margin-left: 47%;" (click)="deleteUser()">Delete User</button>
-      
+            </form>
           
     
 

@@ -255,13 +255,35 @@ export class AdminComponent implements OnInit {
     }
   }
 
+  showAddForm(){
+    this.currentView='add'
+    this.isEdit = false
+    this.selectedType = this.types[1].viewValue
+    this.addForm.controls['name'].setValue('')
+    this.addForm.controls['emailAddress'].setValue('')
+    this.addForm.controls['password'].setValue('')
+    this.addForm.controls['confirmPassword'].setValue('')
+    
+  }
+
+  showDeleteForm(){
+    this.currentView = 'delete'
+    this.deleteEmail = ''
+  }
+
   getUserToBeEdited(userData: {userIdentifier:string, account_type:string, email:string, name:string, position: number}){
     this.editingUser=userData  //save reference for user to be edited
     this.isEdit = true
+    console.log("USer Data to be edited: ", userData)
     //change current view
     this.currentView='add'
     //set form inputs to value of editing user
-
+    this.selectedType = userData.account_type
+    this.addForm.controls['name'].setValue(userData.name)
+    this.addForm.controls['emailAddress'].setValue(userData.email)
+    this.addForm.controls['password'].setValue('')
+    this.addForm.controls['confirmPassword'].setValue('')
+   
   }
 
   getUserToBeDeleted(userData: {userIdentifier:string, account_type:string, email:string, name:string, position: number}){
@@ -270,6 +292,7 @@ export class AdminComponent implements OnInit {
     //change current view
     this.currentView='delete'
     //set form inputs to value of user to be delete
+    this.deleteEmail = userData.email
   }
 
   // selectDegree( index : number ){
