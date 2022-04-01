@@ -87,7 +87,7 @@ export class AdminComponent implements OnInit {
   ];
  
   
-  random='YOU GOT JERRY!'
+  
   isEdit = false
   editingUser: any 
 

@@ -519,8 +519,9 @@ export class CalendarComponent implements OnInit {
           let dialogRef = this.promptDialog.open( PromptDialogComponent, {width: '50vw', data: freeSlots.start ? { events: eventOverlaps, freeSlots: freeSlots} : {events: eventOverlaps} })
           dialogRef.afterClosed().subscribe( (eventResult : {save: boolean, start: string, end: string}) =>{
             let updated = false // if the recommended dates were added
-            if(eventResult.start && eventResult.end){
+            if(eventResult.save && eventResult.start && eventResult.end){
               //set new start & end dates
+              console.log("New Event dates selected!")
               newEvent.start = eventResult.start
               newEvent.end = eventResult.end
               updated = true
@@ -561,7 +562,7 @@ export class CalendarComponent implements OnInit {
 
   async handleEventDrop(eventInfo: any ){
     //console.log(eventInfo)
-
+    //console.log("List of events", this.calendarOptions.events)
     
     let event = eventInfo.event
 
@@ -717,28 +718,24 @@ export class CalendarComponent implements OnInit {
     //Iterate between start/current Date (which ever is latest) & end Period 
     
     for (var d = startingDate; d <= lastDate; d.setDate(d.getDate() + 1)) {
+
       if( consecutiveDays == daysInBetween){
         hasEvents = false
         consecutiveDays = 0
         let date = d
-
         
+        //let end be the nth consecutive date
+        const end = date.toJSON()
+        let newDay =  date.setDate( date.getDate() - daysInBetween )
+        const start = new Date(newDay).toJSON()
         //date.setDate( date.getDate() )
-        const start = date.toJSON()
-        let newDay =  date.setDate( date.getDate() + daysInBetween )
+        //const start = date.toJSON()
         
-        const end = new Date(newDay).toJSON()
+        
+        //const end = new Date(newDay).toJSON()
         console.log(`NEW END : ${end}`)
         return {start: start, end: end}
       }
-      
-      //reset the has events
-      else if( hasEvents ){
-        hasEvents = false 
-        consecutiveDays = 0
-      }
-      
-      else consecutiveDays +=1
 
         for( let event of this.localEvents){
           //for each event check keep count of # of events occuring on d( <=this date)
@@ -748,6 +745,14 @@ export class CalendarComponent implements OnInit {
         }//end of events loop
         
         
+        
+        //reset the has events
+        if( hasEvents ){
+          hasEvents = false 
+          consecutiveDays = 0
+        }
+        
+        else consecutiveDays +=1
         
     }
 
@@ -763,6 +768,7 @@ export class CalendarComponent implements OnInit {
   }
 
   isSameEvent(event1: any, event2:any){
+    console.log('Comparing ', event1, event2)
     if(event1.title== event2.title && event1.extendedProps.course == event2.extendedProps.course && event1.extendedProps.eventType==event2.extendedProps.eventType && event1.extendedProps.createdBy == event2.extendedProps.createdBy)
     return true
 

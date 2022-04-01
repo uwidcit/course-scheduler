@@ -136,7 +136,7 @@ export class FullComponent implements OnDestroy {
 		if (this.auth.loggedIn){
 			this.currentUser = this.auth.currentUser?.uid 
 			//check if the current user is an admin
-			this.isAdmin = this.auth.isAdmin
+			//this.isAdmin = this.auth.isAdmin
 			// this.firebase.isAdmin(this.currentUser).subscribe((response)=>{
 			// 	if(response.result)
 			// 		this.isAdmin = response.result
@@ -157,6 +157,8 @@ export class FullComponent implements OnDestroy {
 			this.unreadNotifications = false
 
 			console.log('Current USER Data: ', result[`${this.currentUser}`] )
+			if( result[`${this.currentUser}`] && result[`${this.currentUser}`].account_type)
+				this.isAdmin = result[`${this.currentUser}`].account_type
 			if( !result || !result[this.currentUser] ||  !result[this.currentUser].notifications){ 
 				this.notifications = []
 				return
