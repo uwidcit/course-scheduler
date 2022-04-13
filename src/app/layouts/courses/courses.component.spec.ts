@@ -9,6 +9,7 @@ import { Auth, getAuth, provideAuth } from '@angular/fire/auth';
 import { CoursesComponent } from './courses.component';
 import { environment } from 'src/environments/environment';
 
+
 describe('CoursesComponent', () => {
   let component: CoursesComponent;
   let fixture: ComponentFixture<CoursesComponent>;

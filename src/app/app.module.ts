@@ -75,7 +75,7 @@ const DEFAULT_PERFECT_SCROLLBAR_CONFIG: PerfectScrollbarConfigInterface = {
     ProgrammeModalComponent,
     AdminComponent,
     CoursesComponent,
-    CourseModalComponent,
+    CourseModalComponent,ProgrammeModalComponent
   ],
   imports: [
     BrowserModule,
@@ -88,7 +88,6 @@ const DEFAULT_PERFECT_SCROLLBAR_CONFIG: PerfectScrollbarConfigInterface = {
     SharedModule,
     RouterModule.forRoot(AppRoutes),
 
-    HttpClientModule,
     TranslateModule.forRoot({
       loader: {
         provide: TranslateLoader,

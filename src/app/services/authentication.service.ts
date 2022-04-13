@@ -40,6 +40,8 @@ export class AuthenticationService{
         }
         else{
             this.loggedIn = false;
+            this.isAdmin= false
+            this.currentUser = null
         }
       });
 

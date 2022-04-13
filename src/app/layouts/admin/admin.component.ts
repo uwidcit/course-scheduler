@@ -122,23 +122,16 @@ export class AdminComponent implements OnInit {
   constructor(private authService: AuthenticationService, private toast: HotToastService, private auth:Auth,
     private firebase:FirebaseDBServiceService, private router: Router) {
     this.currentUser = this.auth.currentUser;
-    if (this.currentUser && this.authService.isAdmin){
+    if ( !this.currentUser && !this.authService.isAdmin){
 			
-			//check if the current user is an admin
       
-			// this.firebase.isAdmin(this.currentUser).subscribe((response)=>{
-			// 	if(response.result)
-			// 		this.isAdmin = response.result
-			// 	else if(response.error)
-			// 	 console.log(response.error)
-        
-      //   if(!this.isAdmin) this.router.navigate(['login']);
-			// })
+      setTimeout(()=>{ 
+        if ( !this.currentUser && !this.authService.isAdmin){
+          this.router.navigate(['login']);
+          this.toast.error('You are unauthorized to access the Admin view.')
+        }
+      }, 1500)
 			
-		}
-		else{
-      this.toast.error('You are unauthorized to access the Admin view.')
-			this.router.navigate(['login']);
 		}
     const list: any[] = []
     const usersRef = ref(this.firebase.dbRef ,'users');
@@ -221,11 +214,13 @@ export class AdminComponent implements OnInit {
         account_type: typeControl, 
         email:emailAddress, 
         name: name, password: password}
-      userInfo.password = 
+      //userInfo.password = 
       this.firebase.editUser( userInfo, this.currentUser.uid).subscribe((response)=>{
         console.log(response)
-        if( response.message)
+        if( response.message){
           this.toast.success(response.message)
+          this.currentView='userData'
+        }
         else if(response.error)
           this.toast.error(response.error)
       })
@@ -254,12 +249,12 @@ export class AdminComponent implements OnInit {
         this.toast.error(" Failed to create User Account!")
         return
       }
-      if(this.selectedType==="type-1"){
-        this.selectedType = "User";
-      }
-      if(this.selectedType==="type-2"){
-        this.selectedType = "Admin";
-      }
+      // if(this.selectedType==="type-1"){
+      //   this.selectedType = "User";
+      // }
+      // if(this.selectedType==="type-2"){
+      //   this.selectedType = "Admin";
+      // }
       set(ref(this.firebase.dbRef, 'users/'+userId),{
         name: userName,
         email: emailAddress,
@@ -286,7 +281,13 @@ export class AdminComponent implements OnInit {
         ID = currUser.userIdentifier;
         console.log("Current ID: " + ID);
         this.firebase.deleteUser(ID, this.currentUser.uid).subscribe((response)=>{
-          console.log("response = "+ JSON.stringify(response));
+          console.log(response)
+          if( response.message){
+            this.toast.success(response.message)
+            this.currentView='userData'
+          }
+          else if(response.error)
+            this.toast.error(response.error)
         });
         //this.authService.
       }
@@ -298,10 +299,7 @@ export class AdminComponent implements OnInit {
     this.isEdit = false
     this.addForm.reset();
     this.selectedType = this.types[1].viewValue
-    // this.addForm.controls['name'].setValue('')
-    // this.addForm.controls['emailAddress'].setValue('')
-    // this.addForm.controls['password'].setValue('')
-    // this.addForm.controls['confirmPassword'].setValue('')
+    
     
   }
 
@@ -318,6 +316,7 @@ export class AdminComponent implements OnInit {
     this.currentView='add'
     //set form inputs to value of editing user
     this.selectedType = userData.account_type
+    //this.addForm.controls['typeControl'].setValue(this.selectedType)
     this.addForm.controls['name'].setValue(userData.name)
     this.addForm.controls['emailAddress'].setValue(userData.email)
     this.addForm.controls['password'].setValue('')
