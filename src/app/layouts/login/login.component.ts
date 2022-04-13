@@ -74,7 +74,7 @@ export class LoginComponent implements OnInit {
     const {emailAddress, password} = this.loginForm.value;
     this.authService.login(emailAddress,password).pipe(
       this.toast.observe({
-        success: 'Logged In Successfully.',
+        success: 'authenticated as ' + emailAddress + '...',//'Logged In Successfully.',
         loading: 'Currently Logging In...', 
         error: 'An error occurred.'})
     ).subscribe(( user) => {

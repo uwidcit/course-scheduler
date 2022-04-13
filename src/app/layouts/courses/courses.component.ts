@@ -51,7 +51,7 @@ export class CoursesComponent implements OnInit {
       }
       
       //Object.assign(this.filteredCourse, this.courseList)
-      console.log( 'Course LiSt ',  this.filteredCourse)
+      //console.log( 'Course LiSt ',  this.filteredCourse)
     })
   }
 
@@ -63,7 +63,7 @@ export class CoursesComponent implements OnInit {
     //this.currDegree = this.degrees.find( degree => degree.name == degreeName)
     this.currIndex = index
     this.currentCourse = this.filteredCourse[index]
-    console.log("Currently Selected: ", this.currentCourse)
+    //console.log("Currently Selected: ", this.currentCourse)
     //console.log(this.currentCourse.courseName)
     this.selected = true
   }
