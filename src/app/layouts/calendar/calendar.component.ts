@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit, ViewChild } from '@angular/core';
+
 import { CalendarOptions, FullCalendarComponent } from '@fullcalendar/angular';
 import  { eventList } from '../../events';
 import {MatDialog} from '@angular/material/dialog';
@@ -8,9 +8,10 @@ import { FirebaseDBServiceService } from 'src/app/services/firebase-dbservice.se
 import {  child, onValue, push, ref, set } from "firebase/database";
 import { PromptDialogComponent } from '../prompt-dialog/prompt-dialog.component';
 import { AuthenticationService } from 'src/app/services/authentication.service';
-
-import { newArray } from '@angular/compiler/src/util';
 import { Router } from '@angular/router';
+import { Component, OnInit, ViewChild } from '@angular/core';
+
+
 
 export interface DialogData {
   createdBy: string;
@@ -96,7 +97,7 @@ export class CalendarComponent implements OnInit {
 
   title!: string;
   date! : string;
-  public calendarOptions: CalendarOptions; 
+  public calendarOptions: CalendarOptions | any; 
   private customButton = {
                     text: 'add',
                     click: function() {
@@ -158,7 +159,7 @@ export class CalendarComponent implements OnInit {
     this.calendarOptions = {
       initialView: 'dayGridMonth',
       height: "84vh",
-      eventChange: function ( arg){ console.log('Changed ',arg.event)},
+      //eventChange: function ( arg){ console.log('Changed ',arg.event)},
       eventClick: this.handleEventClick.bind(this),
       eventMouseEnter: this.handleEventHover.bind(this),
       eventResize: this.handleEventResize.bind(this),
@@ -196,9 +197,9 @@ export class CalendarComponent implements OnInit {
       panelClass: 'calendar_modal'
     });
 
-    dialogRef.afterClosed().subscribe( async( result) => {
-      console.log('The dialog was closed');
-      console.log(`Dialog Result: ${JSON.stringify(result)}`)
+    dialogRef.afterClosed().subscribe( async( result: { delete: any; title: any; id: string; start: any; end: any; allDay: any; extendedProps: { course: string; }; overlap: any; update: boolean; } | null | undefined) => {
+    //  console.log('The dialog was closed');
+    //  console.log(`Dialog Result: ${JSON.stringify(result)}`)
       
       
       if( result !=null && result.delete){
@@ -231,8 +232,8 @@ export class CalendarComponent implements OnInit {
 
         if ( result == null || result ==undefined  )
         this.displayMessage('Modal Closed', 'info')
-        else
-          console.log("invalid Event entry")
+        //else
+        //  console.log("invalid Event entry")
       }
     });
   }
@@ -271,7 +272,7 @@ export class CalendarComponent implements OnInit {
 
   handleEventClick( eventInfo: any ){
     //alert(" You clicked an event")
-    console.log(eventInfo)
+  //  console.log(eventInfo)
 
     
     let event = eventInfo.event
@@ -286,7 +287,7 @@ export class CalendarComponent implements OnInit {
       courseNames.push(key)
     })
     
-    console.log(' Opening Dialog with ', event)
+  //  console.log(' Opening Dialog with ', event)
     this.openDialog( {
       title: event.title,
       start: this.getDateStringFormat(event.startStr) ,  //startStr is in the format "2022-02-19" && start is the date object
@@ -384,13 +385,13 @@ export class CalendarComponent implements OnInit {
     let arr1 : string[] = this.courses[course1].degrees
     let arr2: string[] = this.courses[course2].degrees
 
-    console.log( course1, ' degrees: ', arr1)
-    console.log( course2, ' degrees: ', arr2)
+  //  console.log( course1, ' degrees: ', arr1)
+  //  console.log( course2, ' degrees: ', arr2)
     
     let match : string[] = []
 
     for( let entry of arr1 ){
-      console.log( entry)
+    //  console.log( entry)
       if( arr2.includes(entry) )
           match.push(entry)
     }
@@ -458,7 +459,7 @@ export class CalendarComponent implements OnInit {
     let overlaps: any = [];
     //Check for event overlap && courses are within same degree
     if ( newEvent.id != eventObj.id && this.checkForOverlap(newEvent, eventObj)  ){
-      console.log('New event in getOverlap: ', newEvent.extendedProps.course)
+    //  console.log('New event in getOverlap: ', newEvent.extendedProps.course)
       degreeMatches  = this.checkDegree(newEvent.extendedProps.course, eventObj.extendedProps.course)//get 2 courses in degree
       
       if( degreeMatches.length == 0 ) return;
@@ -467,8 +468,8 @@ export class CalendarComponent implements OnInit {
         let course1:any = this.getDegreeCourse(degree, newEvent.extendedProps.course)//await this.firebase.getDegreeCourse(degree, newEvent.extendedProps.course)
         let course2:any = this.getDegreeCourse(degree, eventObj.extendedProps.course)//await this.firebase.getDegreeCourse(degree, eventObj.extendedProps.course)
         
-        console.log('Fetched course1: ', course1)
-        console.log('Fetched course2: ', course2)
+      //  console.log('Fetched course1: ', course1)
+      //  console.log('Fetched course2: ', course2)
         if( !match && course1.type == "core" && course2.type == "core" && this.compareCoursePeriod(course1.offeredIn, course2.offeredIn) ){
           overlaps.push({ 
             title: eventObj.title,
@@ -506,7 +507,7 @@ export class CalendarComponent implements OnInit {
           eventOverlaps = await this.getOverlappingEvents(newEvent , eventObj , eventOverlaps)
         
 
-        console.log( `Event Overlaps: ${eventOverlaps.length}`, eventOverlaps)
+      //  console.log( `Event Overlaps: ${eventOverlaps.length}`, eventOverlaps)
         
          
          //this.localEvents.push(result)
@@ -514,14 +515,14 @@ export class CalendarComponent implements OnInit {
         let userresponse : boolean = true ;
         if( eventOverlaps.length > 0 ){
           let freeSlots = this.suggestFreeTimeSlot(newEvent)
-          console.log("Free Slots", freeSlots )
+        //  console.log("Free Slots", freeSlots )
 
           let dialogRef = this.promptDialog.open( PromptDialogComponent, {width: '50vw', data: freeSlots.start ? { events: eventOverlaps, freeSlots: freeSlots} : {events: eventOverlaps} })
           dialogRef.afterClosed().subscribe( (eventResult : {save: boolean, start: string, end: string}) =>{
             let updated = false // if the recommended dates were added
             if(eventResult.save && eventResult.start && eventResult.end){
               //set new start & end dates
-              console.log("New Event dates selected!")
+            //  console.log("New Event dates selected!")
               newEvent.start = eventResult.start
               newEvent.end = eventResult.end
               updated = true
@@ -540,8 +541,8 @@ export class CalendarComponent implements OnInit {
               let message = ''
               eventOverlaps.forEach( event => message+= `${event.title} (${event.type})`)
               this.firebase.createNotification(this.currentUserId, newEvent.title, message).subscribe( {
-                next: response => this.displayMessage( response.message || response.error, 'success'),
-                error: errorMsg => this.displayMessage(errorMsg, 'error')
+                next: (response: { message: any; error: any; }) => this.displayMessage( response.message || response.error, 'success'),
+                error: (errorMsg: string) => this.displayMessage(errorMsg, 'error')
               });
 
               this.sendEmailsToOtherUsers(eventOverlaps)
@@ -566,7 +567,7 @@ export class CalendarComponent implements OnInit {
     
     let event = eventInfo.event
 
-    console.log("Darg & Drop Event",event)
+  //  console.log("Darg & Drop Event",event)
     let newEvent :any = {
       id : (event.id ? event.id : ''),
       title: event.title, 
@@ -588,25 +589,25 @@ export class CalendarComponent implements OnInit {
   }
 
   isCoreCourse(course: string){
-    console.log( course,' is a core course: ', this.coreCourses.includes(course))
+  //  console.log( course,' is a core course: ', this.coreCourses.includes(course))
     return this.coreCourses.includes(course)
   }
 
   getDegreeCourse(degree:string, course:string){
     let c = this.degrees[`${degree}` ][`${course}`]
-    console.log('Recieved: ', degree, ' & ', course)
-    console.log('Requested: ', c)
+  //  console.log('Recieved: ', degree, ' & ', course)
+  //  console.log('Requested: ', c)
     return this.degrees[`${degree}` ][`${course}`]
   }
 
   //check number of events <= the perdefined amt
   courseAssessmentWithinLimit(course: string, assessmentType:string, updatingSameCourse: boolean){
-    console.log("Running courseAssessmentWithinLimit for " + course)
+  //  console.log("Running courseAssessmentWithinLimit for " + course)
     if (updatingSameCourse) return true
     let assessmentCount = 0
     
     let courseData = this.courses[`${course}`]
-    console.log( courseData)
+  //  console.log( courseData)
     if( !courseData ) return false
 
 
@@ -639,21 +640,21 @@ export class CalendarComponent implements OnInit {
   }
 
   async sendEmailsToOtherUsers(eventOverlaps:{title: string, type: string, createdBy:string}[]){
-    console.log(" Running sendEmailsToOtherUsers fn...")
+  //  console.log(" Running sendEmailsToOtherUsers fn...")
     for( let event of eventOverlaps){
       let message = ""
       for ( let otherEvents of eventOverlaps)
         if (otherEvents.title != event.title)
           message += `${otherEvents.title} (${otherEvents.type})\n`
       this.firebase.sendEmail(event.title, message, event.createdBy ).subscribe( {
-                                                                                  next: response => this.displayMessage(response.message || response.error, 'success'),
-                                                                                  error: errorMsg => this.displayMessage(errorMsg, 'error')
+                                                                                  next: (response: { message: any; error: any; }) => this.displayMessage(response.message || response.error, 'success'),
+                                                                                  error: (errorMsg: string) => this.displayMessage(errorMsg, 'error')
                                                                                 });
     }
   }
 
   isInSemesterSchedule(start:string, end: string, assessmentType:string ){
-    console.log(" Running isInSemesterSchedule fn...")
+  //  console.log(" Running isInSemesterSchedule fn...")
     
     //if event is being secheduled before current Date
     if( Date.parse(start) < Date.now() ){
@@ -695,14 +696,14 @@ export class CalendarComponent implements OnInit {
     let daysWithinPeriod = new Array()
     let period = { start : '', end: ''}
     if ( isTeachingPeriod ){
-      console.log('\n\nIS TEACHING PERIOD with ', daysInBetween, ' days')
+    //  console.log('\n\nIS TEACHING PERIOD with ', daysInBetween, ' days')
       period.start = this.semesterSchedule.teaching.start
       period.end = this.semesterSchedule.teaching.end
       //iterate through each and find n consecutive free slots
 
     }//end of teachingPeriod check
     else if ( !isTeachingPeriod ){
-      console.log('\n\nIS EXAM PERIOD ', daysInBetween, ' days')
+    //  console.log('\n\nIS EXAM PERIOD ', daysInBetween, ' days')
       period.start = this.semesterSchedule.exam.start
       period.end = this.semesterSchedule.exam.end
       //iterate through each and find n consecutive free slots
@@ -733,7 +734,7 @@ export class CalendarComponent implements OnInit {
         
         
         //const end = new Date(newDay).toJSON()
-        console.log(`NEW END : ${end}`)
+      //  console.log(`NEW END : ${end}`)
         return {start: start, end: end}
       }
 
@@ -768,7 +769,7 @@ export class CalendarComponent implements OnInit {
   }
 
   isSameEvent(event1: any, event2:any){
-    console.log('Comparing ', event1, event2)
+  //  console.log('Comparing ', event1, event2)
     if(event1.title== event2.title && event1.extendedProps.course == event2.extendedProps.course && event1.extendedProps.eventType==event2.extendedProps.eventType && event1.extendedProps.createdBy == event2.extendedProps.createdBy)
     return true
 
