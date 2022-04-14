@@ -88,13 +88,14 @@
                     
                 </mat-menu>
 
-                <button [matMenuTriggerFor]="profile" mat-icon-button class="m-r-5">
+                <button [matMenuTriggerFor]="settings" mat-icon-button class="m-r-5">
                     <mat-icon id="account_icon" >account_circle</mat-icon> </button>
-                <mat-menu #profile="matMenu" class="mymegamenu">
-                    <!-- <button (click)="end.toggle()" mat-menu-item>
-                        <mat-icon>settings</mat-icon> Settings
+                <mat-menu #settings="matMenu" class="mymegamenu">
+                    <p mat-subheader style="position: relative; top:0;padding-top: 0; padding-bottom: 0; margin: 10px 0 0 0;" class="text-uppercase">Settings </p>
+                    <button (click)="end.toggle()" mat-menu-item>
+                        <mat-icon>person</mat-icon> Update Account
                     </button>
-                    <button mat-menu-item>
+                   <!--  <button mat-menu-item>
                         <mat-icon>account_box</mat-icon> Profile
                     </button>
                     <button mat-menu-item>
@@ -175,11 +176,49 @@
             <!-- ============================================================== -->
             <!-- Right Sidebar - style you can find in rightsidebar.component.scss -->
             <!-- ============================================================== -->
-            <mat-sidenav #end position="end" class="chat-panel" mode="over" opened="false">
-                <div class="scroll">
-                    <mat-nav-list>
+            <mat-sidenav #profile_side_nav #end position="end" class="profile-panel" mode="over" [opened]="!closeAccNav">
+                <div class="scroll profile-panel-container">
+                    <h4 > Account </h4>
+                    <!-- <mat-divider></mat-divider> -->
 
-                        <h3 mat-subheader class="text-uppercase font-weight-bold">Settings</h3>
+                    <mat-form-field appearance="fill">
+                        <mat-label>Enter your Name </mat-label>
+                        <input matInput placeholder="John Doe" required [(ngModel)]="name">
+                        <button *ngIf="name!=''" mat-icon-button matSuffix (click)="name=''">
+                            <mat-icon>close</mat-icon>
+                          </button>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="fill">
+                        <mat-label>Enter your email</mat-label>
+                        <input matInput placeholder="pat@example.com" [formControl]="email" required [(ngModel)]="newEmail">
+                        <mat-error *ngIf="email.invalid">{{getErrorMessage()}}</mat-error>
+                        <button *ngIf="newEmail!=''" mat-icon-button matSuffix (click)="newEmail=''">
+                            <mat-icon>close</mat-icon>
+                          </button>
+                    </mat-form-field>
+
+
+                    <mat-form-field appearance="fill" *ngIf="hasNewPassword">
+                        <mat-label>Enter new password</mat-label>
+                        <input matInput [type]="hidePassword ? 'password' : 'text'" [(ngModel)]="newPassword">
+                        <button mat-icon-button matSuffix (click)="hidePassword = !hidePassword" [attr.aria-label]="'Hide password'" [attr.aria-pressed]="hidePassword">
+                          <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+                        </button>
+                    </mat-form-field>
+                    
+                    <mat-checkbox [(ngModel)]="hasNewPassword" >New Password</mat-checkbox> 
+                    
+                    <!-- <mat-divider></mat-divider> -->
+
+                    <div class="form_buttons">
+                        <button mat-button (click)="updateAcc()" id="update_button"> <mat-icon  matPrefix>save</mat-icon> Save Changes </button>
+                        <button mat-button (click)="profile_side_nav.toggle()"  id="cancel_button"> <mat-icon matPrefix>arrow_back</mat-icon> Back </button>
+                    </div>
+                    
+                    <!-- <mat-nav-list>
+
+                        <h3 mat-subheader class="text-uppercase font-weight-bold">Account </h3>
                         <mat-list-item *ngIf="!minisidebar">
                             <mat-slide-toggle color="warn" [(ngModel)]="horizontal">
                                 Horizontal Layout</mat-slide-toggle>
@@ -219,10 +258,10 @@
                             </mat-slide-toggle>
                             
                             
-                            <!-- <mat-checkbox color="warn" [(ngModel)]="dark" (change)="green = blue = danger = false">Dark</mat-checkbox> -->
+                            <mat-checkbox color="warn" [(ngModel)]="dark" (change)="green = blue = danger = false">Dark</mat-checkbox> 
 
                         </mat-list-item>
-                    </mat-nav-list>
+                    </mat-nav-list> -->
                 </div>
             </mat-sidenav>
 

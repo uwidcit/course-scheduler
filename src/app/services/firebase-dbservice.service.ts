@@ -168,6 +168,26 @@ export class FirebaseDBServiceService {
    
   }
 
+  //HTTP request for a user to edit their account
+  editMyAccount( userInfo:{userIdentifier: string,account_type:string, email:string, name:string, password:string , hasNewPassword: boolean} ){
+    //const tableRef = ref( this.dbRef, `users/${userId}`)
+    
+    //remove(tableRef)
+    let request = {
+      
+        "userToUpdate" : userInfo.userIdentifier,
+        "email" : userInfo.email,
+        "name" : userInfo.name,
+        "hasNewPassword": userInfo.hasNewPassword,
+        "password" : userInfo.password,
+        "account_type" : userInfo.account_type
+      
+  }
+    let url = environment.backendURL + "/edit/myaccount" //
+    return this.http.post<{message:string, error:string}>( url, request)
+   
+  }
+
   getUserNotifications(tableRef: DatabaseReference){
     let result ;
     onValue(tableRef, (snapshot) => {
@@ -237,4 +257,7 @@ export class FirebaseDBServiceService {
     let userData = { email: email}
     return set(tableRef, userData)
   }
+
+
+
 }

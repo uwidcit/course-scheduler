@@ -1,3 +1,4 @@
+$primary-color: #00a7df;
 
 .main{
     display: flex;
@@ -30,4 +31,30 @@ mat-icon:hover{
 
 mat-form-field > input {
     width: 100%;
+}
+
+.button_icons{
+    margin-right: 10px;
+    
+}
+
+button{
+    display: inline-flex ;
+    align-items: center ;
+    // x | y| blur | radius | color
+    
+}
+
+button:hover{
+    box-shadow: 0 8px 5px 3px rgb(0 0 0 / 30%);
+    background: #00a7df !important;
+    //filter: drop-shadow();
+}
+
+.mat-icon-button:hover{
+    display: inline-flex !important;
+    /* align-content: center !important; */
+    justify-content: center;
+    background: #00a7df !important;
+    color: #f3f3f3;
 }
