@@ -16,6 +16,8 @@
     align-items: center;
     justify-content: center;
     border: 3px purple solid ;
+
+    text-align: center;
 }
 
 .loginContainer::before{
@@ -46,7 +48,11 @@
     font-size: min( 30px, 3.0vw);
     font-family: Arial, Helvetica, sans-serif;
     color: #f3f3f3 !important;
+    width: 90% !important;
+    line-height: 25px;
 }
+
+
 
 form{
     position: relative;
@@ -69,7 +75,7 @@ form{
 }
 
 input{
-    width: clamp(150px, 100px, 50px) !important;
+  //  width: clamp(150px, 100px, 150px) !important;
   padding: 12px 20px;
   margin: 8px 0;
   display: inline-block;
@@ -102,10 +108,10 @@ mat-icon {
 }
 
 
-.login-fields{
-    display: inline-flex !important;
-    justify-content: center !important;
-}
+// .login-fields{
+//     display: inline-flex !important;
+//     justify-content: center !important;
+// }
 
 // *{
 //     background: #fff;
