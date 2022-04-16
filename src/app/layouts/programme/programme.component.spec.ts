@@ -5,6 +5,7 @@ import { DemoMaterialModule } from 'src/app/demo-material-module';
 import { FirebaseDBServiceService } from 'src/app/services/firebase-dbservice.service';
 
 import { ProgrammeComponent } from './programme.component';
+import { Ng2SearchPipeModule } from 'ng2-search-filter';
 
 describe('ProgrammeComponent', () => {
   let component: ProgrammeComponent;
@@ -12,7 +13,7 @@ describe('ProgrammeComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HttpClientModule, DemoMaterialModule],
+      imports: [HttpClientModule, DemoMaterialModule, Ng2SearchPipeModule],
       declarations: [ ProgrammeComponent ],
       providers: [
         //{provide: MatDialogRef, useValue: {close: (dialogResult: any) => { }}  }

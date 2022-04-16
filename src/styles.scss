@@ -106,3 +106,8 @@
       *::-webkit-scrollbar-thumb:hover {
         background: $primary-calendar-color;
       }
+
+      .dateFields{
+        visibility: hidden !important;
+        position: absolute !important;
+      }

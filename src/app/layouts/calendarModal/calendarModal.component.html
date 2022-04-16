@@ -49,13 +49,21 @@
 
   <p flexLayout="row">
      <mat-form-field appearance="outline" fxFlex="35">
-      <mat-label>Start Date</mat-label>
-      <input #startD matInput type="datetime-local" [(ngModel)]="eventData.start">
+      <mat-label>Start Date </mat-label>
+      <!-- <input #startD matInput type="datetime-local" [(ngModel)]="eventData.start"> -->
+      <button (click)="startD.showPicker()" class="dateButton"> 
+         {{displayDate(eventData.start)}}<mat-icon matSuffix>date_range</mat-icon>
+      </button>
+      <input id="startDateTime" #startD matInput type="datetime-local" [(ngModel)]="eventData.start"  class="dateFields">
     </mat-form-field>
     
     <mat-form-field appearance="outline" fxFlexOffset="5" fxFlex="35">
-      <mat-label>End Date</mat-label>
-      <input #endD matInput type="datetime-local" [(ngModel)]="eventData.end" >
+      <mat-label>End Date </mat-label>
+      <!-- <input #endD matInput type="datetime-local" [(ngModel)]="eventData.end" class="dateFields"> -->
+      <button  (click)="endD.showPicker()" class="dateButton"> 
+        {{displayDate(eventData.end)}} <mat-icon matSuffix>date_range</mat-icon>
+      </button>
+      <input #endD matInput type="datetime-local" [(ngModel)]="eventData.end" class="dateFields">
     </mat-form-field>
     
   </p>

@@ -32,8 +32,8 @@ describe('AdminComponent', () => {
   });
 
   beforeEach(() => {
-    // fixture = TestBed.createComponent(AdminComponent);
-    // component = fixture.componentInstance;
+    fixture = TestBed.createComponent(AdminComponent);
+    component = fixture.componentInstance;
     fixture.detectChanges();
   });
 

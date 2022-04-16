@@ -7,8 +7,8 @@ interface EventData {
     eventType : String,
     details: String,
     createdBy : String} ;
-        start: String;
-        end: String;
+        start: string;
+        end: string;
         allDay: Boolean;
         id: String;
         //groupId: String;
@@ -55,6 +55,21 @@ interface EventData {
         }
         .spacer{
           flex: 1 0 auto;
+        }
+
+        .mat-dialog-content{
+          overflow: hidden;
+        }
+
+        .dateButton{
+          border: none;
+          background: transparent;
+          width: 100%;
+          font-size: 15px;
+        }
+
+        .dateButton > mat-icon{
+          float: right;
         }
   `]
 })
@@ -147,5 +162,9 @@ export class CalendarModal implements OnInit {
   onNoClick(): void { //CANCEL
 
     this.dialogRef.close();
+  }
+
+  displayDate(date: string){
+    return new Date(date).toUTCString().split(' GMT')[0]
   }
 }

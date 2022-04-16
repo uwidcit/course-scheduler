@@ -10,6 +10,7 @@ import { PromptDialogComponent } from '../prompt-dialog/prompt-dialog.component'
 import { AuthenticationService } from 'src/app/services/authentication.service';
 import { Router } from '@angular/router';
 import { Component, OnInit, ViewChild } from '@angular/core';
+import { HotToastService } from '@ngneat/hot-toast';
 
 
 
@@ -107,7 +108,7 @@ export class CalendarComponent implements OnInit {
 
   //localEvents = eventList    
   localEvents : any = [] ;        
-  constructor(private dialog: MatDialog, private promptDialog: MatDialog, private snackBar : MatSnackBar, private firebase: FirebaseDBServiceService, private auth: AuthenticationService, private router: Router ) { 
+  constructor(private dialog: MatDialog, private promptDialog: MatDialog, private snackBar : MatSnackBar, private firebase: FirebaseDBServiceService, private auth: AuthenticationService, private router: Router,  private toast: HotToastService ) { 
     if (this.auth.loggedIn)
       this.currentUserId = this.auth.currentUser?.uid || '' 
     else
@@ -124,14 +125,15 @@ export class CalendarComponent implements OnInit {
       this.courses = data.courses;
 
       //console.log(data.events)
-      Object.entries(data.events).forEach( (entry: any)=>{
-        const [key, value] = entry;
-        if( value.extendedProps.createdBy == this.currentUserId )
-          value.editable = true
-        // else 
-        //   value.editable = false
-        this.localEvents.push(value)
-      })
+      if( data.events )
+        Object.entries(data.events).forEach( (entry: any)=>{
+          const [key, value] = entry;
+          if( value.extendedProps.createdBy == this.currentUserId )
+            value.editable = true
+          // else 
+          //   value.editable = false
+          this.localEvents.push(value)
+        })
       
 
       //if (!data.coursesPerProgramme) return
@@ -442,35 +444,51 @@ export class CalendarComponent implements OnInit {
     setTimeout( ()=> Object.assign(this.localEvents, events), 100)
   }
 
-  displayMessage(message: string, messageType: string){
-    let snackBarRef = this.snackBar.open(
-                        message, 'Close',
-                        { panelClass: messageType, duration: 3000, horizontalPosition: 'center', verticalPosition: 'top'}
-                      )
+  //for event hover
+  // onEventHover(message: string, messageType: string){
+  //   let snackBarRef = this.snackBar.open(
+  //                       message, 'Close',
+  //                       { panelClass: messageType, duration: 3000, horizontalPosition: 'right', verticalPosition: 'top'}
+  //                     )
 
-    //listen for close event
-    snackBarRef.onAction().subscribe(() => {
-      snackBarRef.dismiss(); 
-    });
+  //   //listen for close event
+  //   snackBarRef.onAction().subscribe(() => {
+  //     snackBarRef.dismiss(); 
+  //   });
+  // }
+
+  //for notifications after a task
+  displayMessage(message: string, messageType: string){
+
+    if ( messageType == 'success')
+    this.toast.success(message, {className: messageType, dismissible: true, position: 'top-right'})
+    
+    else if ( messageType == 'info')
+      this.toast.info(message, {className: messageType, dismissible: true, duration: 1000, position: 'top-right'})
+    else if( messageType == 'error')
+    this.toast.error(message, {className: messageType, dismissible: true, position: 'top-right'})
   }
 
   async getOverlappingEvents(newEvent: any, eventObj: any, oldArr: {title: string, type: string}[]){
     let degreeMatches: string[] ;
     let overlaps: any = [];
+
+    
     //Check for event overlap && courses are within same degree
-    if ( newEvent.id != eventObj.id && this.checkForOverlap(newEvent, eventObj)  ){
-    //  console.log('New event in getOverlap: ', newEvent.extendedProps.course)
+    if ( newEvent.id != eventObj.id && this.checkForOverlap(newEvent, eventObj)  ){console.log( `${newEvent.extendedProps.course} vs ${eventObj.extendedProps.course}`)
+     console.log('New event in getOverlap: ', newEvent.extendedProps.course)
       degreeMatches  = this.checkDegree(newEvent.extendedProps.course, eventObj.extendedProps.course)//get 2 courses in degree
-      
+      console.log('Degrees: ', degreeMatches)
+
       if( degreeMatches.length == 0 ) return;
       let match = false;
       for( let degree of degreeMatches){
         let course1:any = this.getDegreeCourse(degree, newEvent.extendedProps.course)//await this.firebase.getDegreeCourse(degree, newEvent.extendedProps.course)
         let course2:any = this.getDegreeCourse(degree, eventObj.extendedProps.course)//await this.firebase.getDegreeCourse(degree, eventObj.extendedProps.course)
         
-      //  console.log('Fetched course1: ', course1)
-      //  console.log('Fetched course2: ', course2)
-        if( !match && course1.type == "core" && course2.type == "core" && this.compareCoursePeriod(course1.offeredIn, course2.offeredIn) ){
+       console.log('Fetched course1: ', course1)
+       console.log('Fetched course2: ', course2)
+        if( !match && this.compareCoursePeriod(course1.offeredIn, course2.offeredIn) ){
           overlaps.push({ 
             title: eventObj.title,
             type: course2.type,
@@ -635,7 +653,7 @@ export class CalendarComponent implements OnInit {
       return true
     }
       
-    this.displayMessage( `Invalid: The # of ${assessmentType} for ${course} has been scheduled`, 'error')
+    this.displayMessage( `Invalid: The number of ${assessmentType} for ${course} has been scheduled`, 'error')
     return false
   }
 
@@ -670,14 +688,15 @@ export class CalendarComponent implements OnInit {
      //IF it's past the scheduling period
     if( Date.now() >= schedulingPeriod.end && assessmentType.toLowerCase() =="assignment")
       this.displayMessage("The period for scheduling Assignments has passed!\n Ask your admin to extend it! ", 'error')
-    else( Date.now() >= schedulingPeriod.end && assessmentType.toLowerCase() =="exam")
+      
+    else if ( Date.now() >= schedulingPeriod.end && assessmentType.toLowerCase() =="exam")
       this.displayMessage("The period for scheduling Exams has passed!\n Ask your admin to extend it! ", 'error')
 
     //between defined scheduling period: true
-    if ( event.start <= schedulingPeriod.end && event.end >= schedulingPeriod.start )
+    else if ( event.start <= schedulingPeriod.end && event.end >= schedulingPeriod.start )
       return true
     
-    if( assessmentType.toLowerCase() =="assignment" )
+    else if( assessmentType.toLowerCase() =="assignment" )
       this.displayMessage("Invalid Date Range for assignment/course work", 'error')
     else
       this.displayMessage("Invalid Date Range for exams", 'error')
@@ -770,7 +789,11 @@ export class CalendarComponent implements OnInit {
 
   isSameEvent(event1: any, event2:any){
   //  console.log('Comparing ', event1, event2)
-    if(event1.title== event2.title && event1.extendedProps.course == event2.extendedProps.course && event1.extendedProps.eventType==event2.extendedProps.eventType && event1.extendedProps.createdBy == event2.extendedProps.createdBy)
+    
+  //if event ids match else if an event id is not present check => title, course, courseType && createdBy
+  if (event1.id && event2.id && event1.id != event2.id)  
+    return false
+  if(  event1.title== event2.title && event1.extendedProps.course == event2.extendedProps.course && event1.extendedProps.eventType==event2.extendedProps.eventType && event1.extendedProps.createdBy == event2.extendedProps.createdBy)
     return true
 
     return false

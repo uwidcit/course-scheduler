@@ -1,19 +1,19 @@
 
 <div class="loginContainer">
     <!-- <h1><mat-icon id="account-icon">account_circle</mat-icon></h1> -->
-    <p class="form_header">Coursework Scheduler Login Form</p>
+    <p class="form_header">Semester Coursework Scheduler</p>
 <form [formGroup]="loginForm" (ngSubmit)="submit()">
     <img src="../../../assets/images/CalendarLogo.png" id="logo" />
     <mat-form-field class="login-fields">
         <mat-icon class="formIcon" matPrefix>email</mat-icon>
-        <input matInput placeholder="Email Address" formControlName="emailAddress"/>
+        <input id="email" matInput placeholder="Email Address" formControlName="emailAddress"/>
         <mat-error *ngIf="this.loginForm.get('emailAddress')?.hasError('required')">
             Email Address is Required.
         </mat-error>
     </mat-form-field>
     <mat-form-field class="login-fields">
         <mat-icon class="formIcon" matPrefix>lock</mat-icon>
-        <input matInput placeholder="Password" formControlName="password" type="password"/>
+        <input id="password" matInput placeholder="Password" formControlName="password" type="password"/>
         
     </mat-form-field>
     <button mat-raised-button type="submit" id="login-button">

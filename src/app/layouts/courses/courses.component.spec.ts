@@ -8,6 +8,7 @@ import { Auth, getAuth, provideAuth } from '@angular/fire/auth';
 
 import { CoursesComponent } from './courses.component';
 import { environment } from 'src/environments/environment';
+import { Ng2SearchPipeModule } from 'ng2-search-filter';
 
 
 describe('CoursesComponent', () => {
@@ -19,7 +20,7 @@ describe('CoursesComponent', () => {
       imports: [HttpClientModule, DemoMaterialModule,
         BrowserAnimationsModule,
         provideFirebaseApp(() => initializeApp(environment.firebase)),
-        provideAuth(() => getAuth()),
+        provideAuth(() => getAuth()), Ng2SearchPipeModule
       ],
       declarations: [ CoursesComponent ],
       providers: [
@@ -36,8 +37,9 @@ describe('CoursesComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it('should create', ( done) => {
     expect(component).toBeTruthy();
     //expect(true).toBeTrue()
+    return done()
   });
 });
