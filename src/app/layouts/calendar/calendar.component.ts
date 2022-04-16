@@ -556,7 +556,7 @@ export class CalendarComponent implements OnInit {
             
             //create notification if saved with overlapping dates 
             if(eventResult.save && !updated && eventOverlaps.length > 1){
-              let message = ''
+              let message = "Clash Detected for: \n"
               eventOverlaps.forEach( event => message+= `${event.title} (${event.type})`)
               this.firebase.createNotification(this.currentUserId, newEvent.title, message).subscribe( {
                 next: (response: { message: any; error: any; }) => this.displayMessage( response.message || response.error, 'success'),
@@ -660,12 +660,17 @@ export class CalendarComponent implements OnInit {
   async sendEmailsToOtherUsers(eventOverlaps:{title: string, type: string, createdBy:string}[]){
   //  console.log(" Running sendEmailsToOtherUsers fn...")
     for( let event of eventOverlaps){
-      let message = ""
+      let message = "Clash Detected for: \n"
       for ( let otherEvents of eventOverlaps)
         if (otherEvents.title != event.title)
           message += `${otherEvents.title} (${otherEvents.type})\n`
-      this.firebase.sendEmail(event.title, message, event.createdBy ).subscribe( {
-                                                                                  next: (response: { message: any; error: any; }) => this.displayMessage(response.message || response.error, 'success'),
+        // this.firebase.sendEmail(event.title, message, event.createdBy ).subscribe( {
+        //                                                                           next: (response: { message: any; error: any; }) => this.displayMessage(response.message || response.error, 'success'),
+        //                                                                           error: (errorMsg: string) => this.displayMessage(errorMsg, 'error')
+        //                                                                         });
+        //Send email & create Notification
+        this.firebase.createNotification(event.createdBy , event.title, message).subscribe( {
+                                                                                  next: (response: { message: any; error: any; }) => this.displayMessage( response.message || response.error, 'success'),
                                                                                   error: (errorMsg: string) => this.displayMessage(errorMsg, 'error')
                                                                                 });
     }
