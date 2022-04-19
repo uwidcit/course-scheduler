@@ -13,6 +13,8 @@ import { Auth, getAuth, provideAuth } from '@angular/fire/auth';
 
 import { CalendarComponent } from './calendar.component';
 import { environment } from 'src/environments/environment';
+import { ReactiveFormsModule } from '@angular/forms';
+import { SpinnerComponent } from 'src/app/shared/spinner.component';
 
 describe('CalendarComponent', () => {
   let component: CalendarComponent;
@@ -20,12 +22,12 @@ describe('CalendarComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HttpClientModule, DemoMaterialModule,
+      imports: [HttpClientModule, DemoMaterialModule ,ReactiveFormsModule,
         BrowserAnimationsModule, RouterModule.forRoot(AppRoutes),
         provideFirebaseApp(() => initializeApp(environment.firebase)),
         provideAuth(() => getAuth()),
       ],
-      declarations: [ CalendarComponent ],
+      declarations: [ CalendarComponent,SpinnerComponent ],
       providers: [
         {provide: MatDialogRef, useValue: {close: (dialogResult: any) => { }}  },
         { provide: MAT_DIALOG_DATA, useValue: { update: false } },

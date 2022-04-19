@@ -6,14 +6,14 @@
     <img src="../../../assets/images/CalendarLogo.png" id="logo" />
     <mat-form-field class="login-fields">
         <mat-icon class="formIcon" matPrefix>email</mat-icon>
-        <input id="email" matInput placeholder="Email Address" formControlName="emailAddress"/>
+        <input id="email" matInput placeholder="Email Address" formControlName="emailAddress" />
         <mat-error *ngIf="this.loginForm.get('emailAddress')?.hasError('required')">
             Email Address is Required.
         </mat-error>
     </mat-form-field>
     <mat-form-field class="login-fields">
         <mat-icon class="formIcon" matPrefix>lock</mat-icon>
-        <input id="password" matInput placeholder="Password" formControlName="password" type="password"/>
+        <input id="password" matInput placeholder="Password" formControlName="password" type="password" />
         
     </mat-form-field>
     <button mat-raised-button type="submit" id="login-button">

@@ -2,6 +2,8 @@ import { HttpClientModule } from '@angular/common/http';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { DemoMaterialModule } from 'src/app/demo-material-module';
@@ -18,7 +20,7 @@ describe('ProgrammeModalComponent', () => {
       imports: [
         HttpClientModule, BrowserModule, FormsModule,
         BrowserAnimationsModule,
-        DemoMaterialModule
+        DemoMaterialModule, MatFormFieldModule, MatIconModule
       ],
       declarations: [ ProgrammeModalComponent ],
       providers: [

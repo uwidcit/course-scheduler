@@ -9,7 +9,8 @@
     <main >
         <mat-toolbar> 
             <div class="spacer"></div>
-            <mat-icon matSuffix aria-hidden="false" aria-label="add icon" (click)="openDialog(false)">add</mat-icon>
+            <!-- <mat-icon matSuffix aria-hidden="false" aria-label="add icon" (click)="openDialog(false)">add</mat-icon> -->
+            <button class="add_button" (click)="openDialog(false)"> <mat-icon  matPrefix aria-hidden="false" aria-label="add icon">add</mat-icon> New Programme</button>
             
         </mat-toolbar>
          <div *ngIf="selected && currDegree!=null then selected; else notSelected;"></div>

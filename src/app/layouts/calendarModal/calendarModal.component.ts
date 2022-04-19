@@ -1,5 +1,6 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog';
+import { HotToastService } from '@ngneat/hot-toast';
 import { DialogData } from '../calendar/calendar.component';
 
 interface EventData {
@@ -84,7 +85,7 @@ export class CalendarModal implements OnInit {
   details: String;
   createdBy : String ;
 
-  constructor( public dialogRef: MatDialogRef<CalendarModal>, @Inject(MAT_DIALOG_DATA) public data: DialogData) {
+  constructor( public dialogRef: MatDialogRef<CalendarModal>, @Inject(MAT_DIALOG_DATA) public data: DialogData, private toast: HotToastService) {
     
     // this.start = `${this.data.start}`
     // this.end =  `${this.data.end}`
@@ -133,12 +134,24 @@ export class CalendarModal implements OnInit {
 
   onSave(): void{
     if(this.eventData.title == '' || this.eventData.title == null){
-      alert("Please Enter a Name for your event")
+      this.toast.error("Please Enter a Name for your assessment", {className: 'error'})
       return
     }
     
+    else if( this.course == '' || !this.course ){
+      this.toast.error("Please select the assessment's course", {className: 'error'})
+      return
+    }
+    else if(  Date.parse(this.eventData.start) < Date.now() ){
+      this.toast.error("Assessments must be scheduled after current Date!", {className: 'error'})
+      return
+    }
     else if( this.eventData.start == this.eventData.end ){
-      alert("Datetime for start and end dates cannot be the same your event")
+      this.toast.error("Datetime for start and end dates cannot be the same!", {className: 'error'})
+      return
+    }
+    else if ( Date.parse(this.eventData.start) > Date.parse(this.eventData.end) ){
+      this.toast.error("The start date of your assessment cannot be after the end date!", {className: 'error'})
       return
     }
     else{
@@ -165,6 +178,7 @@ export class CalendarModal implements OnInit {
   }
 
   displayDate(date: string){
-    return new Date(date).toUTCString().split(' GMT')[0]
+    //return new Date(date).toISOString().split(' GMT')[0]
+    return new Date(date).toDateString()  + ' ' + new Date(date).toLocaleTimeString().replace(':00 ', ' ')
   }
 }

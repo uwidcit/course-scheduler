@@ -69,6 +69,8 @@ export interface Course{
       .keys{
         margin-right: 20px;
         font-weight: 700;
+        display: inline-flex;
+        flex-direction: row;
       }
       
       mat-spinner{
@@ -162,6 +164,7 @@ export class CalendarComponent implements OnInit {
       initialView: 'dayGridMonth',
       height: "84vh",
       //eventChange: function ( arg){ console.log('Changed ',arg.event)},
+      eventDidMount: ()=>{ },
       eventClick: this.handleEventClick.bind(this),
       eventMouseEnter: this.handleEventHover.bind(this),
       eventResize: this.handleEventResize.bind(this),
@@ -323,15 +326,15 @@ export class CalendarComponent implements OnInit {
 
       if ( start_date == end_date ){
         
-        displayMsg = `${eventInfo.event.title} (${eventInfo.event.extendedProps.eventType})`
+        displayMsg = `${eventInfo.event.title} (${eventInfo.event.extendedProps.eventType})\n` + eventInfo.event.extendedProps.details
       }
       else
-      displayMsg = `${eventInfo.event.title} (${eventInfo.event.extendedProps.eventType})`
+      displayMsg = `${eventInfo.event.title} (${eventInfo.event.extendedProps.eventType})\n` + eventInfo.event.extendedProps.details
       
     }
 
     else 
-      displayMsg = eventInfo.event.title + ` (${eventInfo.event.extendedProps.eventType})`
+      displayMsg = eventInfo.event.title + ` (${eventInfo.event.extendedProps.eventType})\n` + eventInfo.event.extendedProps.details
 
     
     

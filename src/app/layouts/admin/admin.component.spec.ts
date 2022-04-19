@@ -10,6 +10,11 @@ import { environment } from 'src/environments/environment';
 import { HotToastModule, HotToastService } from '@ngneat/hot-toast';
 import { AppRoutes } from 'src/app/app.routing';
 import { RouterModule } from '@angular/router';
+import { MatTableModule } from '@angular/material/table';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { SpinnerComponent } from 'src/app/shared/spinner.component';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
 
 describe('AdminComponent', () => {
   let component: AdminComponent;
@@ -21,9 +26,9 @@ describe('AdminComponent', () => {
         provideFirebaseApp(() => initializeApp(environment.firebase)),
         provideAuth(() => getAuth()),
         HotToastModule.forRoot(),
-        RouterModule.forRoot(AppRoutes),
+        RouterModule.forRoot(AppRoutes), MatTableModule,  ReactiveFormsModule, FormsModule, MatFormFieldModule, MatIconModule
       ],
-      declarations: [ AdminComponent ],
+      declarations: [ AdminComponent,SpinnerComponent ],
       providers: [
          FirebaseDBServiceService
       ]

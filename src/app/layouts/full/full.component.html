@@ -140,13 +140,13 @@
                 (close)="sidebarOpened = true">
                 <mat-nav-list  >
                     <h3 mat-subheader class="text-uppercase font-weight-bold">Menu</h3>
-                   <a routerLink="/views/calendar">  <mat-list-item>
+                   <a routerLink="/views/calendar" (click)="snav.toggle()">  <mat-list-item>
                         <mat-card>Calendar</mat-card> 
                     </mat-list-item></a>
-                    <a routerLink="/views/programmes"> <mat-list-item  >
+                    <a routerLink="/views/programmes" (click)="snav.toggle()"> <mat-list-item  >
                         <mat-card >Programmes </mat-card>
                     </mat-list-item> </a>
-                     <a routerLink="/views/courses"> <mat-list-item>
+                     <a routerLink="/views/courses" (click)="snav.toggle()"> <mat-list-item>
                        <mat-card>
                             Courses
                             <!-- <span>Courses </span> 
@@ -154,8 +154,8 @@
                             <span class="label label-red"> 10</span> -->
                         </mat-card>
                     </mat-list-item></a>
-                    <a *ngIf="isAdmin" routerLink="/views/admin"> <mat-list-item  >
-                        <mat-card >Admin View </mat-card>
+                    <a *ngIf="isAdmin" routerLink="/views/admin" (click)="snav.toggle()"> <mat-list-item  >
+                        <mat-card >Admin Dashboard </mat-card>
                     </mat-list-item> </a>
                     
                 
