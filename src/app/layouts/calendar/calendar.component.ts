@@ -248,7 +248,7 @@ export class CalendarComponent implements OnInit {
 
   handleDateClick(arg: {date : Date, dateStr :String, allDay:boolean }) {
     //alert('date click! ' + arg.dateStr)
-    // console.log(arg); // {date : Date, dateStr :String, allDay:boolean }
+    console.log(arg); // {date : Date, dateStr :String, allDay:boolean }
     // console.log( typeof(arg.date))  //object
     
     //Search for a date in the format '2022-02-01T00:00:00'
@@ -277,7 +277,7 @@ export class CalendarComponent implements OnInit {
 
   handleEventClick( eventInfo: any ){
     //alert(" You clicked an event")
-  //  console.log(eventInfo)
+   console.log(eventInfo)
 
     
     let event = eventInfo.event
@@ -387,8 +387,8 @@ export class CalendarComponent implements OnInit {
 
   checkDegree( course1:string, course2: string){
 
-    let arr1 : string[] = this.courses[course1].degrees
-    let arr2: string[] = this.courses[course2].degrees
+    let arr1 : string[] = this.courses[course1].degrees ?? [ ]
+    let arr2: string[] = this.courses[course2].degrees ?? [ ]
 
   //  console.log( course1, ' degrees: ', arr1)
   //  console.log( course2, ' degrees: ', arr2)
@@ -693,6 +693,8 @@ export class CalendarComponent implements OnInit {
     let schedulingPeriod = assessmentType.toLowerCase() == "assignment" ? { start: Date.parse(`${this.semesterSchedule.teaching.start}`), end: Date.parse(`${this.semesterSchedule.teaching.end}`) }
                                                           : { start: Date.parse(`${this.semesterSchedule.exam.start}`), end: Date.parse(`${this.semesterSchedule.exam.end}`) }
 
+                                                          
+    console.log(`${assessmentType.toLowerCase()} Scheduling Period :`, schedulingPeriod )
      //IF it's past the scheduling period
     if( Date.now() >= schedulingPeriod.end && assessmentType.toLowerCase() =="assignment")
       this.displayMessage("The period for scheduling Assignments has passed!\n Ask your admin to extend it! ", 'error')
@@ -701,7 +703,7 @@ export class CalendarComponent implements OnInit {
       this.displayMessage("The period for scheduling Exams has passed!\n Ask your admin to extend it! ", 'error')
 
     //between defined scheduling period: true
-    else if ( event.start <= schedulingPeriod.end && event.end >= schedulingPeriod.start )
+    else if ( (event.start >= schedulingPeriod.start && event.start <= schedulingPeriod.end ) &&  (event.end <= schedulingPeriod.end && event.end >= schedulingPeriod.start) )
       return true
     
     else if( assessmentType.toLowerCase() =="assignment" )

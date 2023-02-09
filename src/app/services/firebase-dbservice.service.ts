@@ -78,8 +78,8 @@ export class FirebaseDBServiceService {
         return false;
       }
   }
-
-
+  
+  
   async getCourseDegrees( courseName: string){
     const tableRef = ref(this.dbRef, `courses/${courseName}/degrees`)
 
@@ -96,32 +96,32 @@ export class FirebaseDBServiceService {
 
   async updateCourseDegree(degreeName: string, course: string, isNewCourse: boolean){
     let degreeArr = await this.getCourseDegrees(course)
-
+    
     if( degreeArr.length == 0 && isNewCourse==false ) return false; //if empty array found on Delete operation
 
     if( isNewCourse )
       degreeArr.push( degreeName)
-
-    else{
+      
+      else{
         //find degree location & update array 
-      let degreeIndex = degreeArr.indexOf(degreeName)
-      if( degreeIndex == -1) return false
-      degreeArr.splice(degreeIndex, 1)
-    }
-    
+        let degreeIndex = degreeArr.indexOf(degreeName)
+        if( degreeIndex == -1) return false
+        degreeArr.splice(degreeIndex, 1)
+      }
+      
     //update array of degrees in Course json
     let tableRef = ref(this.dbRef, `courses/${course}/degrees`)
     set( tableRef, degreeArr)
     return true
   }
-
+  
 
   deleteEvent( eventId: string){
     const tableRef = ref( this.dbRef, `events/${eventId}`)
-
+    
     remove(tableRef)
   }
-
+  
   deleteProgramme( programmeId: string){
     const tableRef = ref( this.dbRef, `coursesPerProgramme/${programmeId}`)
 
@@ -130,7 +130,7 @@ export class FirebaseDBServiceService {
 
   deleteCourse( courseCode: string){
     const tableRef = ref( this.dbRef, `courses/${courseCode}`)
-
+    
     remove(tableRef)
   }
 
@@ -156,18 +156,18 @@ export class FirebaseDBServiceService {
     let request = {
       "currentUser" : currentUserId,
       "userData" : {
-          "userToUpdate" : userInfo.userIdentifier,
-          "email" : userInfo.email,
-          "name" : userInfo.name,
+        "userToUpdate" : userInfo.userIdentifier,
+        "email" : userInfo.email,
+        "name" : userInfo.name,
           "password" : userInfo.password,
           "account_type" : userInfo.account_type
       }
-  }
+    }
     let url = environment.backendURL + "/edit/user" //
     return this.http.post<{message:string, error:string}>( url, request)
-   
+    
   }
-
+  
   //HTTP request for a user to edit their account
   editMyAccount( userInfo:{userIdentifier: string,account_type:string, email:string, name:string, password:string , hasNewPassword: boolean} ){
     //const tableRef = ref( this.dbRef, `users/${userId}`)
@@ -175,16 +175,16 @@ export class FirebaseDBServiceService {
     //remove(tableRef)
     let request = {
       
-        "userToUpdate" : userInfo.userIdentifier,
-        "email" : userInfo.email,
+      "userToUpdate" : userInfo.userIdentifier,
+      "email" : userInfo.email,
         "name" : userInfo.name,
         "hasNewPassword": userInfo.hasNewPassword,
         "password" : userInfo.password,
         "account_type" : userInfo.account_type
       
-  }
-    let url = environment.backendURL + "/edit/myaccount" //
-    return this.http.post<{message:string, error:string}>( url, request)
+      }
+      let url = environment.backendURL + "/edit/myaccount" //
+      return this.http.post<{message:string, error:string}>( url, request)
    
   }
 
@@ -258,6 +258,17 @@ export class FirebaseDBServiceService {
     return set(tableRef, userData)
   }
 
-
-
+  
+  async updateSemesterSchedule(schedule:any) {
+      const pathRef = ref(this.dbRef, `semesterSchedule`)
+  
+      try {
+        set(pathRef,schedule)
+        return true
+      } catch (error) {
+        console.log(error)
+        return false;
+      }
+  }
+  
 }

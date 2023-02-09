@@ -21,21 +21,21 @@ interface userType {
   viewValue: string;
 }
 
-interface PeriodicElement{
-  position : number;
-  name : string;
+interface PeriodicElement {
+  position: number;
+  name: string;
   email: string;
-  account_type : string;
+  account_type: string;
 }
 
-export function matchingPasswordsValidator(): ValidatorFn{
+export function matchingPasswordsValidator(): ValidatorFn {
 
   return (control: AbstractControl): ValidationErrors | null => {
     const password = control.get('password')?.value;
     const confirmPassword = control.get('confirmPassword')?.value;
 
-    if(password && confirmPassword && password !== confirmPassword){
-      return{
+    if (password && confirmPassword && password !== confirmPassword) {
+      return {
         thePasswordsDontMatch: true
       }
     }
@@ -47,12 +47,12 @@ export function matchingPasswordsValidator(): ValidatorFn{
   selector: 'app-admin',
   templateUrl: './admin.component.html',
   styleUrls: ['./admin.component.scss']
-  
+
 })
 
 export class AdminComponent implements OnInit {
   // Set up for Angular Material table 
-  displayedColumns : string[] = [ 'edit' ,'position','name','email','account_type', 'delete']
+  displayedColumns: string[] = ['edit', 'position', 'name', 'email', 'account_type', 'delete']
   columns = [
     {
       columnDef: 'edit', //key in json
@@ -85,28 +85,28 @@ export class AdminComponent implements OnInit {
       cell: (element: PeriodicElement) => ``, // data displayed in table cell
     },
   ];
- 
-  
-  
+
+
+
   isEdit = false
-  editingUser: any 
+  editingUser: any
 
   //Forms Data
   currentView = "userData";
   showUserInfo = "noShow";
   selectedType = 'User';
   types: userType[] = [
-    {value: 'type-1', viewValue: 'User'},
-    {value: 'type-2', viewValue: 'Admin'},
+    { value: 'type-1', viewValue: 'User' },
+    { value: 'type-2', viewValue: 'Admin' },
   ];
 
   addForm = new FormGroup({
-    name: new FormControl('',Validators.required),
-    emailAddress: new FormControl('',[Validators.email, Validators.required]),
+    name: new FormControl('', Validators.required),
+    emailAddress: new FormControl('', [Validators.email, Validators.required]),
     typeControl: new FormControl(this.types[0].viewValue),
-    password: new FormControl('',Validators.required),
-    confirmPassword: new FormControl('',Validators.required)
-  }, {validators: matchingPasswordsValidator()})
+    password: new FormControl('', Validators.required),
+    confirmPassword: new FormControl('', Validators.required)
+  }, { validators: matchingPasswordsValidator() })
 
   // deleteForm = new FormGroup({
   //   emailAddress2: new FormControl('', [Validators.required, Validators.email])
@@ -117,118 +117,142 @@ export class AdminComponent implements OnInit {
   listUsers: any = new Array();
   deleteEmail: string = '';
   isAdmin = false
-  dataSource = new MatTableDataSource<PeriodicElement>(this.listUsers) 
+  dataSource = new MatTableDataSource<PeriodicElement>(this.listUsers)
 
-  constructor(private authService: AuthenticationService, private toast: HotToastService, private auth:Auth,
-    private firebase:FirebaseDBServiceService, private router: Router) {
+  semesterSchedule = { teaching: { start: '', end: '' }, exam: { start: '', end: '' } }
+
+  teachingStart = ''
+
+  constructor(private authService: AuthenticationService, private toast: HotToastService, private auth: Auth,
+    private firebase: FirebaseDBServiceService, private router: Router) {
     this.currentUser = this.auth.currentUser;
-    if ( !this.currentUser && !this.authService.isAdmin){
-			
-      
-      setTimeout(()=>{ 
-        if ( !this.currentUser && !this.authService.isAdmin){
+    if (!this.currentUser && !this.authService.isAdmin) {
+
+
+      setTimeout(() => {
+        if (!this.currentUser && !this.authService.isAdmin) {
           this.router.navigate(['login']);
           this.toast.error('You are unauthorized to access the Admin view.')
         }
       }, 1500)
-			
-		}
-    const list: any[] = []
-    const usersRef = ref(this.firebase.dbRef ,'users');
 
+    }
+    const list: any[] = []
+
+    // Getting users
+    const usersRef = ref(this.firebase.dbRef, 'users');
     onValue(usersRef, (snapshot) => {
       this.listUsers.length = 0;
       const data = snapshot.val();
 
-      if( !data ) return;
+      if (!data) return;
       let count = 0;
       // if(data[this.currentUser.uid] && data[this.currentUser.uid].account_type && data[this.currentUser.uid].account_type.toLowerCase() !="Admin".toLowerCase()){
       //   this.toast.error('You are unauthorized to access this view')
       //   this.router.navigate(['/views/calendar'])
       // }
 
-      Object.entries(data).forEach((entry:any)=>{
-        const[userIdentifier, userInfo] = entry;
-        count  += 1
-        let info : {userIdentifier:string, account_type:string, email:string, name:string, position: number};
-        info = {userIdentifier:userIdentifier, account_type:userInfo.account_type, email:userInfo.email,name:userInfo.name, position: count}
+      Object.entries(data).forEach((entry: any) => {
+        const [userIdentifier, userInfo] = entry;
+        count += 1
+        let info: { userIdentifier: string, account_type: string, email: string, name: string, position: number };
+        info = { userIdentifier: userIdentifier, account_type: userInfo.account_type, email: userInfo.email, name: userInfo.name, position: count }
         this.listUsers.push(info)
       });
-      this.dataSource = new MatTableDataSource<PeriodicElement>(this.listUsers) 
+      this.dataSource = new MatTableDataSource<PeriodicElement>(this.listUsers)
     })
+
+
+    // Getting semesterSchedule
+
+    const scheduleRef = ref(this.firebase.dbRef, 'semesterSchedule');
+
+    onValue(scheduleRef, (snapshot) => {
+      const data = snapshot.val();
+
+      if (!data) return;
+
+      this.semesterSchedule.teaching = data?.teaching;
+      this.semesterSchedule.exam = data?.exam;
+
+      this.teachingStart = data?.teaching?.start;
+      // console.log('SemesterSchedule', data)
+    });
+
 
   }
 
-  
+
 
   ngOnInit(): void {
   }
 
-  get name(){
+  get name() {
     return this.addForm.get('name');
   }
 
-  get emailAddress(){
+  get emailAddress() {
     return this.addForm.get('email');
   }
 
   // getemailAddress2(){
   //   return this.deleteForm.get('email')
   // }
-  getUserType(){
+  getUserType() {
     return this.addForm.get('typeControl');
   }
 
-  get password(){
+  get password() {
     return this.addForm.get('password');
   }
 
-  get confirmPassword(){
+  get confirmPassword() {
     return this.addForm.get('confirmPassword');
   }
 
-  toggleDisplayUserInfo(){
-    if(this.showUserInfo==="show"){
-      this.showUserInfo="noShow";
+  toggleDisplayUserInfo() {
+    if (this.showUserInfo === "show") {
+      this.showUserInfo = "noShow";
     }
-    else{
-      this.showUserInfo="show";
+    else {
+      this.showUserInfo = "show";
     }
   }
 
-  createAccount(email:string, password:string){
+  createAccount(email: string, password: string) {
     // return createUserWithEmailAndPassword(this.auth,email,password).then( (userCredentials)=>{
     //  return userCredentials.user.uid;
     //})
-    return createUserWithEmailAndPassword(this.auth,email,password);
+    return createUserWithEmailAndPassword(this.auth, email, password);
     //userCredentials.user.uid
   }
 
-  async addSubmit(){
-    if(!this.addForm.valid) return;
+  async addSubmit() {
+    if (!this.addForm.valid) return;
 
-    const {name, emailAddress, typeControl, password} = this.addForm.value;
-    if( this.isEdit){
+    const { name, emailAddress, typeControl, password } = this.addForm.value;
+    if (this.isEdit) {
       let userInfo = {
-        userIdentifier: this.editingUser.userIdentifier, 
-        account_type: typeControl, 
-        email:emailAddress, 
-        name: name, password: password}
+        userIdentifier: this.editingUser.userIdentifier,
+        account_type: typeControl,
+        email: emailAddress,
+        name: name, password: password
+      }
       //userInfo.password = 
-      this.firebase.editUser( userInfo, this.currentUser.uid).subscribe((response)=>{
+      this.firebase.editUser(userInfo, this.currentUser.uid).subscribe((response) => {
         console.log(response)
-        if( response.message){
+        if (response.message) {
           this.toast.success(response.message)
-          this.currentView='userData'
+          this.currentView = 'userData'
         }
-        else if(response.error)
+        else if (response.error)
           this.toast.error(response.error)
       })
     }
     else {
-      this.userCredential =  await this.createAccount(emailAddress,password)
-      console.log("\n\nNew User Credential: "+ this.userCredential, "\n\n\n")
-        //this.userCredential =  this.createAccount(emailAddress,password)
+      this.userCredential = await this.createAccount(emailAddress, password)
+      console.log("\n\nNew User Credential: " + this.userCredential, "\n\n\n")
+      //this.userCredential =  this.createAccount(emailAddress,password)
       //this.userID = this.currentUser.userId
       // this.authService.signUp(name,emailAddress,password).pipe(
       //   this.toast.observe({
@@ -239,13 +263,13 @@ export class AdminComponent implements OnInit {
       // ).subscribe(() => {
       //   //this.router.navigate(['/home'])
       // })
-    
+
       //const database = getDatabase();
       const userId = this.userCredential.user.uid;
       const userName = name;
-      console.log("\n\nNew User ID: "+ userId, "\n\n\n")
+      console.log("\n\nNew User ID: " + userId, "\n\n\n")
 
-      if( !userId){
+      if (!userId) {
         this.toast.error(" Failed to create User Account!")
         return
       }
@@ -255,7 +279,7 @@ export class AdminComponent implements OnInit {
       // if(this.selectedType==="type-2"){
       //   this.selectedType = "Admin";
       // }
-      set(ref(this.firebase.dbRef, 'users/'+userId),{
+      set(ref(this.firebase.dbRef, 'users/' + userId), {
         name: userName,
         email: emailAddress,
         account_type: this.selectedType
@@ -266,7 +290,7 @@ export class AdminComponent implements OnInit {
     this.addForm.reset();
   }
 
-  deleteUser(){
+  deleteUser() {
     // console.log("Current ID: " + this.getemailAddress2());
     // if(!this.deleteForm.valid) return;
     //const {deleteAddress} = this.deleteForm.value;
@@ -274,19 +298,19 @@ export class AdminComponent implements OnInit {
     let ID: string;
     //let i = 0;
     //key = {userIdentifier:"userIdentifier", account_type:"userInfo.account_type", email:"userInfo.email"}
-    for(let i = 0; i < this.listUsers.length; i++){
+    for (let i = 0; i < this.listUsers.length; i++) {
       let currUser = this.listUsers[i];
-      
-      if(currUser.email==this.deleteEmail){
+
+      if (currUser.email == this.deleteEmail) {
         ID = currUser.userIdentifier;
         console.log("Current ID: " + ID);
-        this.firebase.deleteUser(ID, this.currentUser.uid).subscribe((response)=>{
+        this.firebase.deleteUser(ID, this.currentUser.uid).subscribe((response) => {
           console.log(response)
-          if( response.message){
+          if (response.message) {
             this.toast.success(response.message)
-            this.currentView='userData'
+            this.currentView = 'userData'
           }
-          else if(response.error)
+          else if (response.error)
             this.toast.error(response.error)
         });
         //this.authService.
@@ -294,26 +318,26 @@ export class AdminComponent implements OnInit {
     }
   }
 
-  showAddForm(){
-    this.currentView='add'
+  showAddForm() {
+    this.currentView = 'add'
     this.isEdit = false
     this.addForm.reset();
     this.selectedType = this.types[1].viewValue
-    
-    
+
+
   }
 
-  showDeleteForm(){
+  showDeleteForm() {
     this.currentView = 'delete'
     this.deleteEmail = ''
   }
 
-  getUserToBeEdited(userData: {userIdentifier:string, account_type:string, email:string, name:string, position: number}){
-    this.editingUser=userData  //save reference for user to be edited
+  getUserToBeEdited(userData: { userIdentifier: string, account_type: string, email: string, name: string, position: number }) {
+    this.editingUser = userData  //save reference for user to be edited
     this.isEdit = true
     console.log("USer Data to be edited: ", userData)
     //change current view
-    this.currentView='add'
+    this.currentView = 'add'
     //set form inputs to value of editing user
     this.selectedType = userData.account_type
     //this.addForm.controls['typeControl'].setValue(this.selectedType)
@@ -321,14 +345,14 @@ export class AdminComponent implements OnInit {
     this.addForm.controls['emailAddress'].setValue(userData.email)
     this.addForm.controls['password'].setValue('')
     this.addForm.controls['confirmPassword'].setValue('')
-   
+
   }
 
-  getUserToBeDeleted(userData: {userIdentifier:string, account_type:string, email:string, name:string, position: number}){
-     
+  getUserToBeDeleted(userData: { userIdentifier: string, account_type: string, email: string, name: string, position: number }) {
+
 
     //change current view
-    this.currentView='delete'
+    this.currentView = 'delete'
     //set form inputs to value of user to be delete
     this.deleteEmail = userData.email
   }
@@ -344,5 +368,46 @@ export class AdminComponent implements OnInit {
   // deleteCourse(){
   //   this.firebase.deleteProgramme(`${this.currDegree?.name}`)
   // }
+
+
+
+  // Scheduler Form Info
+
+  scheduleForm = new FormGroup({
+    teaching_start: new FormControl(this.semesterSchedule?.teaching?.start, Validators.required),
+    teaching_end: new FormControl(this.semesterSchedule?.teaching?.end, Validators.required),
+    exam_start: new FormControl(this.semesterSchedule?.exam?.start, Validators.required),
+    exam_end: new FormControl(this.semesterSchedule?.exam?.start, Validators.required),
+  }, {})
+
+  async updateSchedule() {
+
+    if (!this.scheduleForm.valid) return;
+
+    const { teaching_start, teaching_end, exam_start, exam_end } = this.scheduleForm.value;
+
+    let scheduleInfo = {
+      teaching: {
+        start: teaching_start,
+        end: teaching_end
+      },
+      exam: {
+        start: exam_start,
+        end: exam_end
+      }
+    }
+
+    this.firebase.updateSemesterSchedule(scheduleInfo).then
+      ((response) => {
+        // console.log(response)
+        if (response) {
+          this.toast.success('Semester Schedule Updated!')
+          // this.currentView = 'userData'
+        }
+        else if (response)
+          this.toast.error('Failed to Update Semester!')
+      })
+
+  }
 
 }

@@ -32,7 +32,7 @@ export class CourseModalComponent implements OnInit {
   courseDegrees : string[] = new Array()
   assessments : {type: string, weighting: number}[]
 
-  assessmentType : string = 'exam'
+  assessmentType : string = 'Exam'
   weighting: number = 1
 
   degreeList : string[] = [] //list of course from firebase
