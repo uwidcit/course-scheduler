@@ -1,5 +1,8 @@
 {
   "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+  "cli": {
+    "analytics": "02315288-d74f-4680-aadb-47fa9370be9b"
+  },
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
@@ -81,6 +84,10 @@
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
+          "options": {
+            "port": 4200,
+            "disableHostCheck": true
+          },
           "configurations": {
             "production": {
               "browserTarget": "project:build:production"
